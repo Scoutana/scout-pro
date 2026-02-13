@@ -197,6 +197,49 @@
   .upload-zone:hover { border-color: var(--groen); background: var(--surface2); }
   .upload-zone input { display: none; }
 
+
+  /* FOTO */
+  .foto-upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+  .foto-upload-zone:hover { border-color: var(--groen); }
+  .foto-upload-zone input { display: none; }
+  .foto-preview { width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px; display: block; }
+  .foto-remove { position: absolute; top: 8px; right: 8px; background: var(--rood); border: none; color: #fff; width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+
+  /* GEMIDDELDE BADGE */
+  .avg-badge { display: inline-flex; align-items: center; gap: 10px; background: var(--surface2); border: 2px solid var(--groen); border-radius: 10px; padding: 10px 18px; margin-top: 8px; }
+  .avg-num { font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700; color: var(--groen); }
+  .avg-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* KALENDER */
+  .kalender-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-top: 10px; }
+  .kal-header { text-align: center; font-size: 10px; color: var(--text-dim); font-weight: 700; padding: 4px; text-transform: uppercase; }
+  .kal-day { text-align: center; font-size: 12px; padding: 6px 2px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; transition: all 0.1s; min-height: 32px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .kal-day:hover { background: var(--surface3); border-color: var(--border); }
+  .kal-day.today { border-color: var(--groen); color: var(--groen); font-weight: 700; }
+  .kal-day.has-event { background: var(--groen-dim); color: #fff; }
+  .kal-day.empty { cursor: default; }
+  .kal-day .kal-dot { width: 4px; height: 4px; background: var(--geel); border-radius: 50%; margin-top: 2px; }
+  .kal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .kal-nav-btn { background: var(--surface3); border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .kal-maand { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; }
+  .wedstrijd-list { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
+  .wedstrijd-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .wedstrijd-datum { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); min-width: 80px; }
+  .wedstrijd-info { flex: 1; }
+  .wedstrijd-titel { font-size: 13px; font-weight: 600; }
+  .wedstrijd-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  /* HERINNERINGEN */
+  .herinnering-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .herinnering-datum { font-family: 'Space Mono', monospace; font-size: 11px; min-width: 90px; }
+  .herinnering-datum.vervallen { color: var(--rood); }
+  .herinnering-datum.binnenkort { color: var(--geel); }
+  .herinnering-datum.ok { color: var(--groen); }
+  .herinnering-info { flex: 1; }
+  .herinnering-titel { font-size: 13px; font-weight: 600; }
+  .herinnering-sub { font-size: 11px; color: var(--text-dim); }
+  .badge-count { background: var(--rood); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: 4px; font-family: 'Space Mono', monospace; }
+
   @media (max-width: 650px) {
     .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
     .fase-grid { grid-template-columns: 1fr; }
@@ -213,6 +256,8 @@
     <button class="tab-btn active" onclick="showTab('wedstrijd')">Wedstrijd</button>
     <button class="tab-btn" onclick="showTab('veld')">Opstelling</button>
     <button class="tab-btn" onclick="showTab('speler')">Spelers</button>
+    <button class="tab-btn" onclick="showTab('kalender')">Kalender</button>
+    <button class="tab-btn" onclick="showTab('herinneringen')">Follow-up <span class="badge-count" id="badge-herinneringen" style="display:none">0</span></button>
     <button class="tab-btn" onclick="showTab('export')">Export</button>
     <button class="tab-btn" onclick="showTab('tips')">Tips</button>
   </div>
@@ -458,6 +503,57 @@
   </div>
 </div>
 
+<!-- ====================== KALENDER ====================== -->
+<div id="panel-kalender" class="panel">
+  <div class="section">
+    <div class="section-title">🗓 Wedstrijdkalender</div>
+    <div class="kal-nav">
+      <button class="kal-nav-btn" onclick="kalNav(-1)">◀</button>
+      <div class="kal-maand" id="kal-maand-label"></div>
+      <button class="kal-nav-btn" onclick="kalNav(1)">▶</button>
+    </div>
+    <div class="kalender-grid" id="kal-grid"></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Wedstrijd toevoegen</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="min-width:140px;"><label>Datum</label><input type="date" id="kal-datum"></div>
+      <div style="flex:1;min-width:150px;"><label>Thuis vs Uit</label><input type="text" id="kal-match" placeholder="b.v. Club Brugge vs Anderlecht"></div>
+      <div style="min-width:120px;"><label>Competitie</label><input type="text" id="kal-comp" placeholder="b.v. JPL"></div>
+      <div style="min-width:120px;"><label>Te scouten speler</label><input type="text" id="kal-speler" placeholder="Naam speler"></div>
+      <button class="btn btn-groen" onclick="addWedstrijd()">+ Toevoegen</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Geplande wedstrijden</div>
+    <div class="wedstrijd-list" id="wedstrijd-list"></div>
+  </div>
+</div>
+
+<!-- ====================== HERINNERINGEN ====================== -->
+<div id="panel-herinneringen" class="panel">
+  <div class="section">
+    <div class="section-title">🔔 Follow-up herinneringen</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+      <div style="flex:1;min-width:150px;"><label>Speler</label><input type="text" id="her-speler" placeholder="Naam speler"></div>
+      <div style="min-width:140px;"><label>Datum herinnering</label><input type="date" id="her-datum"></div>
+      <div style="min-width:140px;"><label>Type</label>
+        <select id="her-type">
+          <option>👀 2e observatie plannen</option>
+          <option>📞 Contact club</option>
+          <option>📋 Rapport afwerken</option>
+          <option>🤝 Meeting scout</option>
+          <option>📊 Rapport delen</option>
+          <option>⚽ Wedstrijd bijwonen</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:150px;"><label>Notitie</label><input type="text" id="her-notitie" placeholder="Extra info..."></div>
+      <button class="btn btn-groen" onclick="addHerinnering()">+ Toevoegen</button>
+    </div>
+    <div id="herinnering-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+  </div>
+</div>
+
 <!-- PLAYER MODAL -->
 <div class="modal-overlay" id="playerModal">
   <div class="modal">
@@ -583,12 +679,14 @@ function showTab(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
-  const labels = { wedstrijd: 'wedstrijd', veld: 'opstelling', speler: 'spelers', export: 'export', tips: 'tips' };
+  const labels = { wedstrijd: 'wedstrijd', veld: 'opstelling', speler: 'spelers', kalender: 'kalender', herinneringen: 'follow-up', export: 'export', tips: 'tips' };
   document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.textContent.trim().toLowerCase() === labels[name]) b.classList.add('active');
+    if (b.textContent.trim().toLowerCase().startsWith(labels[name])) b.classList.add('active');
   });
   if (name === 'export') generateNotion();
   if (name === 'veld') renderPlayers();
+  if (name === 'kalender') { renderKalender(); renderWedstrijdList(); }
+  if (name === 'herinneringen') renderHerinneringen();
 }
 
 // =================== WEDSTRIJD ===================
@@ -887,6 +985,7 @@ function createNewSpelerData(id) {
     shots: 0,
     ratings,
     finalRating: 0,
+    foto: null,
     obs_met: '',
     obs_zonder: '',
     obs_tact: '',
@@ -978,6 +1077,28 @@ function renderSpelerForm() {
         </div>
         <div><label>Ploeg</label><input type="text" id="s-ploeg_${sid}" value="${s.ploeg}" placeholder="Clubnaam"></div>
       </div>
+      <div class="divider"></div>
+      <div class="grid-2" style="margin-top:4px;">
+        <div>
+          <label>📸 Foto speler</label>
+          <div class="foto-upload-zone" onclick="document.getElementById('foto-input_${sid}').click()" id="foto-zone_${sid}">
+            <input type="file" id="foto-input_${sid}" accept="image/*" onchange="loadFoto(event,${sid})">
+            ${s.foto ? `<img src="${s.foto}" class="foto-preview" id="foto-img_${sid}"><button class="foto-remove" onclick="removeFoto(event,${sid})">×</button>` : `<div style="padding:20px 0;"><div style="font-size:32px;margin-bottom:6px;">📸</div><div style="font-size:12px;color:var(--text-dim);">Klik om foto toe te voegen</div></div>`}
+          </div>
+        </div>
+        <div>
+          <label>Gemiddelde beoordeling</label>
+          <div class="avg-badge">
+            <div>
+              <div class="avg-num" id="avg-display_${sid}">–</div>
+              <div class="avg-label">gemiddelde</div>
+            </div>
+            <div style="font-size:11px;color:var(--text-dim);line-height:1.6;">
+              Automatisch<br>berekend op<br>basis van<br>14 criteria
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="grid-4" style="margin-top:10px;">
         <div><label>Geboortedatum</label><input type="date" id="s-geboortedatum_${sid}" value="${s.geboortedatum}"></div>
         <div><label>Beste voet</label>
@@ -1059,6 +1180,7 @@ function renderSpelerForm() {
         s.ratings[attr.key] = i;
         updateStars(`stars-${attr.key}_${sid}`, i);
         drawRadar(sid);
+        updateAvgDisplay(sid);
       });
       starsDiv.appendChild(star);
     }
@@ -1254,9 +1376,212 @@ function copyNotion() {
   });
 }
 
+// =================== FOTO ===================
+function loadFoto(event, sid) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const s = spelersData.find(x => x.id === sid);
+    if (s) {
+      s.foto = e.target.result;
+      const zone = document.getElementById('foto-zone_' + sid);
+      if (zone) {
+        zone.innerHTML = `<input type="file" id="foto-input_${sid}" accept="image/*" onchange="loadFoto(event,${sid})"><img src="${e.target.result}" class="foto-preview"><button class="foto-remove" onclick="removeFoto(event,${sid})">×</button>`;
+        zone.querySelector('input').style.display = 'none';
+      }
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFoto(event, sid) {
+  event.stopPropagation();
+  const s = spelersData.find(x => x.id === sid);
+  if (s) { s.foto = null; renderSpelerForm(); }
+}
+
+// =================== GEMIDDELDE ===================
+function calcAvg(sid) {
+  const s = spelersData.find(x => x.id === sid);
+  if (!s) return 0;
+  const vals = attributes.map(a => s.ratings[a.key] || 0);
+  const filled = vals.filter(v => v > 0);
+  if (filled.length === 0) return 0;
+  return (filled.reduce((a, b) => a + b, 0) / filled.length).toFixed(2);
+}
+
+function updateAvgDisplay(sid) {
+  const avg = calcAvg(sid);
+  const el = document.getElementById('avg-display_' + sid);
+  if (el) el.textContent = avg > 0 ? avg + '/10' : '–';
+}
+
+// =================== KALENDER ===================
+let kalDate = new Date();
+let wedstrijden = [];
+
+function kalNav(dir) {
+  kalDate.setMonth(kalDate.getMonth() + dir);
+  renderKalender();
+}
+
+function renderKalender() {
+  const year = kalDate.getFullYear();
+  const month = kalDate.getMonth();
+  const maanden = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+  document.getElementById('kal-maand-label').textContent = maanden[month] + ' ' + year;
+  const grid = document.getElementById('kal-grid');
+  grid.innerHTML = '';
+  const dagen = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  dagen.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'kal-header'; h.textContent = d; grid.appendChild(h);
+  });
+  const firstDay = new Date(year, month, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // convert to Mon=0
+  for (let i = 0; i < startDow; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'kal-day empty'; grid.appendChild(empty);
+  }
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayEl = document.createElement('div');
+    dayEl.className = 'kal-day';
+    const dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const hasEvent = wedstrijden.some(w => w.datum === dateStr);
+    if (d === today.getDate() && month === today.getMonth() && year === today.getFullYear()) dayEl.classList.add('today');
+    if (hasEvent) dayEl.classList.add('has-event');
+    dayEl.innerHTML = d + (hasEvent ? '<div class="kal-dot"></div>' : '');
+    grid.appendChild(dayEl);
+  }
+}
+
+function addWedstrijd() {
+  const datum = document.getElementById('kal-datum').value;
+  const match = document.getElementById('kal-match').value.trim();
+  const comp = document.getElementById('kal-comp').value.trim();
+  const speler = document.getElementById('kal-speler').value.trim();
+  if (!datum || !match) { alert('Vul datum en wedstrijd in.'); return; }
+  wedstrijden.push({ id: Date.now(), datum, match, comp, speler });
+  wedstrijden.sort((a, b) => a.datum.localeCompare(b.datum));
+  document.getElementById('kal-datum').value = '';
+  document.getElementById('kal-match').value = '';
+  document.getElementById('kal-comp').value = '';
+  document.getElementById('kal-speler').value = '';
+  renderKalender();
+  renderWedstrijdList();
+}
+
+function renderWedstrijdList() {
+  const list = document.getElementById('wedstrijd-list');
+  list.innerHTML = '';
+  if (wedstrijden.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:10px;">Nog geen wedstrijden gepland.</div>';
+    return;
+  }
+  const today = new Date().toISOString().split('T')[0];
+  wedstrijden.forEach((w, i) => {
+    const isPast = w.datum < today;
+    const div = document.createElement('div');
+    div.className = 'wedstrijd-item';
+    div.innerHTML = `
+      <div class="wedstrijd-datum" style="color:${isPast ? 'var(--text-dim)' : 'var(--accent)'}">
+        ${w.datum.split('-').reverse().join('/')}
+      </div>
+      <div class="wedstrijd-info">
+        <div class="wedstrijd-titel">${w.match}</div>
+        <div class="wedstrijd-sub">${w.comp ? w.comp + ' · ' : ''}${w.speler ? '👤 ' + w.speler : ''}</div>
+      </div>
+      <button class="del-btn" onclick="delWedstrijd(${i})">×</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function delWedstrijd(i) {
+  wedstrijden.splice(i, 1);
+  renderKalender();
+  renderWedstrijdList();
+}
+
+// =================== HERINNERINGEN ===================
+let herinneringen = [];
+
+function addHerinnering() {
+  const speler = document.getElementById('her-speler').value.trim();
+  const datum = document.getElementById('her-datum').value;
+  const type = document.getElementById('her-type').value;
+  const notitie = document.getElementById('her-notitie').value.trim();
+  if (!speler || !datum) { alert('Vul speler en datum in.'); return; }
+  herinneringen.push({ id: Date.now(), speler, datum, type, notitie });
+  herinneringen.sort((a, b) => a.datum.localeCompare(b.datum));
+  document.getElementById('her-speler').value = '';
+  document.getElementById('her-datum').value = '';
+  document.getElementById('her-notitie').value = '';
+  renderHerinneringen();
+  updateBadge();
+}
+
+function renderHerinneringen() {
+  const list = document.getElementById('herinnering-list');
+  list.innerHTML = '';
+  if (herinneringen.length === 0) {
+    list.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:10px;">Geen herinneringen. Voeg een follow-up toe hierboven.</div>';
+    return;
+  }
+  const today = new Date().toISOString().split('T')[0];
+  const soon = new Date(); soon.setDate(soon.getDate() + 7);
+  const soonStr = soon.toISOString().split('T')[0];
+  herinneringen.forEach((h, i) => {
+    let klasse = 'ok', label = 'Gepland';
+    if (h.datum < today) { klasse = 'vervallen'; label = '⚠️ Verlopen'; }
+    else if (h.datum <= soonStr) { klasse = 'binnenkort'; label = '🔔 Binnenkort'; }
+    const div = document.createElement('div');
+    div.className = 'herinnering-item';
+    div.innerHTML = `
+      <div class="herinnering-datum ${klasse}">
+        ${h.datum.split('-').reverse().join('/')}<br>
+        <span style="font-size:10px;">${label}</span>
+      </div>
+      <div class="herinnering-info">
+        <div class="herinnering-titel">${h.type} — ${h.speler}</div>
+        <div class="herinnering-sub">${h.notitie || '—'}</div>
+      </div>
+      <button class="del-btn" onclick="delHerinnering(${i})">×</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function delHerinnering(i) {
+  herinneringen.splice(i, 1);
+  renderHerinneringen();
+  updateBadge();
+}
+
+function updateBadge() {
+  const today = new Date().toISOString().split('T')[0];
+  const soon = new Date(); soon.setDate(soon.getDate() + 7);
+  const soonStr = soon.toISOString().split('T')[0];
+  const urgent = herinneringen.filter(h => h.datum <= soonStr).length;
+  const badge = document.getElementById('badge-herinneringen');
+  if (badge) {
+    badge.textContent = urgent;
+    badge.style.display = urgent > 0 ? 'inline' : 'none';
+  }
+}
+
 // =================== INIT ===================
 // Start with empty speler prompt
 document.getElementById('speler-form-container').innerHTML = '<div style="padding:20px;color:var(--text-dim);font-size:13px;">Klik "+ Nieuwe speler" om een spelersbeoordeling te starten.</div>';
+kalDate = new Date();
+renderKalender();
+renderWedstrijdList();
+renderHerinneringen();
+updateBadge();
 </script>
 </body>
 </html>
