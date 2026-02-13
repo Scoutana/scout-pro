@@ -853,18 +853,20 @@ function updateFormaties() { /* Could auto-arrange based on formation */ }
 
 // =================== SPELERS BEOORDELINGEN ===================
 const attributes = [
-  { key: 'snelheid', label: '⚡ Snelheid' },
-  { key: 'techniek', label: '🎯 Techniek' },
-  { key: 'kopspel', label: '🏋 Kopspel' },
-  { key: 'passing', label: '🔗 Passing' },
-  { key: 'schot', label: '💥 Schot' },
-  { key: 'dribbel', label: '🌀 Dribbel' },
-  { key: 'positionering', label: '📍 Positionering' },
-  { key: 'pressing', label: '🔥 Pressing' },
-  { key: 'beslissingen', label: '🧠 Beslissingen' },
-  { key: 'leiderschap', label: '📣 Leiderschap' },
-  { key: 'uithoudingsvermogen', label: '🏃 Uithouding' },
-  { key: 'kracht', label: '💪 Kracht' },
+  { key: 'aanpassingsvermogen',  label: '🔄 Aanpassingsvermogen',   notion: 'Aanpassingsvermogen' },
+  { key: 'coordinatie',          label: '🎯 Coördinatie',            notion: 'Coördinatie' },
+  { key: 'creativiteit',         label: '💡 Creativiteit',           notion: 'Creativiteit' },
+  { key: 'fysiek',               label: '💪 Fysiek',                 notion: 'Fysiek' },
+  { key: 'motoriek',             label: '⚡ Motoriek',               notion: 'Motoriek' },
+  { key: 'mentale_weerbaarheid', label: '🧠 Mentale weerbaarheid',   notion: 'Mentale weerbaarheid' },
+  { key: 'positiespel',          label: '📍 Positiespel',            notion: 'Positiespel' },
+  { key: 'professionele_houding',label: '🤝 Professionele houding',  notion: 'Professionele houding' },
+  { key: 'scanning',             label: '👁 Scanning',               notion: 'Scanning' },
+  { key: 'spelintelligentie',    label: '🔍 Spelintelligentie',      notion: 'Spelintelligentie' },
+  { key: 'stabiliteit',          label: '🏋 Stabiliteit',            notion: 'Stabiliteit' },
+  { key: 'techniek_druk',        label: '🔥 Techniek onder druk',    notion: 'Techniek onder druk' },
+  { key: 'werkethiek',           label: '⚙️ Werkethiek',             notion: 'Werkethiek' },
+  { key: 'winnaarmentaliteit',   label: '🏆 Winnaarmentaliteit',     notion: 'Winnaarmentaliteit' },
 ];
 
 function createNewSpelerData(id) {
@@ -1098,8 +1100,8 @@ function drawRadar(sid) {
   if (!s) return;
   const ctx = canvas.getContext('2d');
   const cx = 170, cy = 170, r = 130;
-  const keys = ['snelheid','techniek','passing','schot','dribbel','positionering','pressing','beslissingen','kracht','uithoudingsvermogen'];
-  const labels = ['Snelheid','Techniek','Passing','Schot','Dribbel','Positie','Pressing','Beslissing','Kracht','Uithouding'];
+  const keys = ['aanpassingsvermogen','coordinatie','creativiteit','fysiek','motoriek','mentale_weerbaarheid','positiespel','professionele_houding','scanning','spelintelligentie','stabiliteit','techniek_druk','werkethiek','winnaarmentaliteit'];
+  const labels = ['Aanpass.','Coord.','Creativiteit','Fysiek','Motoriek','Mentaal','Positiespel','Prof.','Scanning','Spelint.','Stabiliteit','Tech.druk','Werkethiek','Winnaar'];
   const n = keys.length;
   ctx.clearRect(0, 0, 340, 340);
   ctx.fillStyle = '#111418';
@@ -1160,29 +1162,45 @@ function generateNotion() {
 
   // Player assessments
   const spelersLines = spelersData.map(s => {
-    const attrLines = attributes.map(a => `    ${a.label.padEnd(22)} ${'█'.repeat(s.ratings[a.key]||0)}${'░'.repeat(10-(s.ratings[a.key]||0))}  ${s.ratings[a.key]||0}/10`).join('\n');
+    const avg = attributes.length > 0 ? (attributes.reduce((sum,a) => sum + (s.ratings[a.key]||0), 0) / attributes.length).toFixed(2) : '—';
+    const attrLines = attributes.map(a => `  ${(a.notion||a.label).padEnd(26)}: ${s.ratings[a.key]||0}/10`).join('\n');
     return `
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  SPELER: #${s.nr} ${s.naam.toUpperCase()}
-  Positie: ${s.positie} | Ploeg: ${s.ploeg}
-  Geboortedatum: ${s.geboortedatum || '—'} | Voet: ${s.voet} | ⚡ Wapen: ${s.wapen || '—'}
-  Speeltijd: ${s.speelmin}' | Goals: ${s.goals} | Assists: ${s.assists} | Schoten: ${s.shots}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RAPPORT: ${s.naam.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Speler:           ${s.naam}
+Scout:            Scoutana © Andy Mulders
+Scoutdatum:       ${new Date().toLocaleDateString('nl-BE')}
+Positie:          ${s.positie}
+Ploeg:            ${s.ploeg || '—'}
+Geboortedatum:    ${s.geboortedatum || '—'}
+Beste voet:       ${s.voet}
+Wapen:            ${s.wapen || '—'}
+Speeltijd:        ${s.speelmin}'
+Goals:            ${s.goals} | Assists: ${s.assists} | Schoten: ${s.shots}
 
-  KWALITEITEN
+GEMIDDELDE BEOORDELING: ${avg}/10
+EINDSCORE:              ${s.finalRating}/10
+
+BEOORDELINGEN
 ${attrLines}
 
-  Eindscore: ${s.finalRating}/10
+CONCLUSIE
+${s.obs_tact || '—'}
 
-  MET DE BAL:    ${s.obs_met || '—'}
-  ZONDER DE BAL: ${s.obs_zonder || '—'}
-  TACTISCH:      ${s.obs_tact || '—'}
-  FYSIEK:        ${s.obs_fys || '—'}
+STERKE PUNTEN
+${s.s_sterk || '—'}
 
-  STERKSTE MOMENTEN: ${s.s_sterk || '—'}
-  AANDACHTSPUNTEN:   ${s.s_zwak || '—'}
+ZWAKKE PUNTEN
+${s.s_zwak || '—'}
 
-  AANBEVELING:  ${s.advies || '—'}
-  WAARDE:       ${s.waarde || '—'}`;
+NOTITIES
+Met de bal:    ${s.obs_met || '—'}
+Zonder de bal: ${s.obs_zonder || '—'}
+Fysiek:        ${s.obs_fys || '—'}
+
+AANBEVELING:  ${s.advies || '—'}
+WAARDE:       ${s.waarde || '—'}`;
   }).join('\n');
 
   const output = `
