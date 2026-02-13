@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pro Voetbal Analyse</title>
+<title>Scoutana</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
@@ -20,370 +20,206 @@
     --text: #e8edf5;
     --text-dim: #7a8799;
     --accent: #4FC3F7;
+    --blauw: #1565C0;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; font-size: 14px; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    font-size: 14px;
-  }
-
-  /* HEADER */
   header {
     background: var(--surface);
     border-bottom: 2px solid var(--groen);
-    padding: 16px 24px;
+    padding: 12px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     position: sticky;
     top: 0;
     z-index: 100;
+    flex-wrap: wrap;
+    gap: 8px;
   }
-
-  .logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    color: var(--groen);
-    text-transform: uppercase;
-  }
-
-  .tab-bar {
-    display: flex;
-    gap: 4px;
-  }
-
+  .logo { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--groen); }
+  .tab-bar { display: flex; gap: 4px; flex-wrap: wrap; }
   .tab-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 8px 18px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.15s;
+    background: none; border: 1px solid var(--border); color: var(--text-dim);
+    padding: 7px 14px; border-radius: 6px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; transition: all 0.15s;
   }
-
   .tab-btn:hover { border-color: var(--groen); color: var(--text); }
   .tab-btn.active { background: var(--groen); border-color: var(--groen); color: #000; font-weight: 700; }
 
-  .export-btn {
-    background: var(--surface3);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.15s;
-  }
-  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* PANELS */
-  .panel { display: none; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .panel { display: none; padding: 20px; max-width: 1200px; margin: 0 auto; }
   .panel.active { display: block; }
 
-  /* SECTIONS */
-  .section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-  }
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+  .section-title { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--groen); text-transform: uppercase; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 
-  .section-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--groen);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
 
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
-
-  /* FORM ELEMENTS */
-  label {
-    display: block;
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-bottom: 5px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-
+  label { display: block; font-size: 11px; color: var(--text-dim); margin-bottom: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
   input[type="text"], input[type="number"], input[type="date"], select, textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    color: var(--text);
-    padding: 9px 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    transition: border-color 0.15s;
-    outline: none;
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text); padding: 8px 11px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; transition: border-color 0.15s; outline: none;
   }
+  input:focus, select:focus, textarea:focus { border-color: var(--groen); background: var(--surface3); }
+  textarea { resize: vertical; min-height: 75px; line-height: 1.5; }
+  .divider { height: 1px; background: var(--border); margin: 14px 0; }
 
-  input:focus, select:focus, textarea:focus {
-    border-color: var(--groen);
-    background: var(--surface3);
-  }
+  /* BUTTONS */
+  .btn { padding: 9px 18px; border-radius: 7px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; border: none; transition: opacity 0.15s; }
+  .btn:hover { opacity: 0.85; }
+  .btn-groen { background: var(--groen); color: #000; }
+  .btn-accent { background: var(--accent); color: #000; }
+  .btn-red { background: var(--rood); color: #fff; }
+  .btn-ghost { background: var(--surface3); border: 1px solid var(--border); color: var(--text); }
 
-  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  /* SCORE */
+  .score-wrap { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .score-box { background: var(--surface2); border: 2px solid var(--border); border-radius: 10px; padding: 14px 20px; text-align: center; min-width: 75px; }
+  .score-num { font-family: 'Space Mono', monospace; font-size: 30px; font-weight: 700; color: var(--groen); display: block; background: none; border: none; width: 60px; text-align: center; padding: 0; }
+  .score-team { font-size: 10px; color: var(--text-dim); margin-top: 3px; text-transform: uppercase; }
 
-  /* RATING STARS */
-  .rating-group { }
-  .rating-label { font-size: 11px; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .stars { display: flex; gap: 4px; }
-  .star {
-    width: 28px; height: 28px;
-    background: var(--surface3);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: 15px;
-    transition: all 0.1s;
-    user-select: none;
-  }
-  .star:hover, .star.active { background: var(--geel); border-color: var(--geel); color: #000; }
-
-  /* SCORE BUTTONS */
-  .score-row { display: flex; align-items: center; gap: 16px; }
-  .score-box {
-    background: var(--surface2);
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 24px;
-    text-align: center;
-    min-width: 80px;
-  }
-  .score-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--groen);
-    display: block;
-  }
-  .score-team { font-size: 11px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; }
-
-  /* EVENT LOG */
-  .event-log { }
-  .event-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .event-input-row input[type="number"] { width: 70px; flex-shrink: 0; }
-  .event-input-row select { width: 160px; flex-shrink: 0; }
-  .event-input-row input[type="text"] { flex: 1; }
-  .add-event-btn {
-    background: var(--groen);
-    border: none;
-    color: #000;
-    padding: 9px 16px;
-    border-radius: 7px;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 18px;
-    flex-shrink: 0;
-    transition: opacity 0.15s;
-  }
-  .add-event-btn:hover { opacity: 0.85; }
-
-  .event-list { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
-  .event-item {
-    background: var(--surface3);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .event-min {
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    color: var(--accent);
-    min-width: 35px;
-    font-weight: 700;
-  }
-  .event-type {
-    font-size: 18px;
-    min-width: 28px;
-    text-align: center;
-  }
+  /* EVENTS */
+  .event-input-row { display: flex; gap: 7px; margin-bottom: 10px; flex-wrap: wrap; }
+  .event-input-row input[type="number"] { width: 65px; flex-shrink: 0; }
+  .event-input-row select { width: 150px; flex-shrink: 0; }
+  .event-input-row input[type="text"] { flex: 1; min-width: 120px; }
+  .add-event-btn { background: var(--groen); border: none; color: #000; padding: 8px 14px; border-radius: 7px; cursor: pointer; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+  .event-list { display: flex; flex-direction: column; gap: 5px; max-height: 260px; overflow-y: auto; }
+  .event-item { background: var(--surface3); border: 1px solid var(--border); border-radius: 7px; padding: 7px 11px; display: flex; align-items: center; gap: 9px; }
+  .event-min { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent); min-width: 32px; font-weight: 700; }
+  .event-type { font-size: 16px; min-width: 24px; text-align: center; }
   .event-desc { flex: 1; font-size: 13px; }
-  .del-btn {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    cursor: pointer;
-    font-size: 16px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    transition: all 0.1s;
-  }
+  .del-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 15px; padding: 2px 5px; border-radius: 4px; transition: all 0.1s; }
   .del-btn:hover { background: var(--rood); color: #fff; }
 
-  /* PLAYER RADAR */
-  .radar-wrap { display: flex; justify-content: center; padding: 12px 0; }
-  canvas { border-radius: 8px; }
-
-  /* FASE CARDS */
-  .fase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .fase-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-  }
-  .fase-name {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-  }
-
-  /* TOGGLE CHIPS */
-  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip {
-    background: var(--surface3);
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.1s;
-    user-select: none;
-  }
+  /* CHIPS */
+  .chip-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip { background: var(--surface3); border: 1px solid var(--border); color: var(--text-dim); padding: 4px 11px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.1s; user-select: none; }
   .chip:hover { border-color: var(--groen); color: var(--text); }
   .chip.on { background: var(--groen-dim); border-color: var(--groen); color: #fff; }
   .chip.bad { background: #5c1a1a; border-color: var(--rood); color: #ff8a80; }
 
-  /* NOTION BLOCK */
-  .notion-output {
-    background: #1a1f28;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    line-height: 1.8;
-    color: #b0bec5;
-    white-space: pre-wrap;
-    max-height: 500px;
-    overflow-y: auto;
-  }
+  /* FASE */
+  .fase-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fase-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .fase-name { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
 
-  .copy-btn {
-    background: var(--accent);
-    border: none;
-    color: #000;
-    padding: 10px 20px;
-    border-radius: 7px;
+  /* ===================== VOETBALVELD ===================== */
+  .pitch-container { position: relative; width: 100%; max-width: 750px; margin: 0 auto; }
+  .pitch-svg-wrap { position: relative; width: 100%; }
+  .pitch-svg-wrap svg { width: 100%; height: auto; display: block; }
+
+  .player-dot {
+    position: absolute;
+    transform: translate(-50%, -50%);
     cursor: pointer;
-    font-weight: 700;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    margin-bottom: 12px;
-    transition: opacity 0.15s;
+    z-index: 10;
+    text-align: center;
   }
-  .copy-btn:hover { opacity: 0.85; }
+  .player-dot .dot {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px;
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    margin: 0 auto 2px;
+  }
+  .player-dot .pname {
+    font-size: 9px; font-weight: 600; white-space: nowrap;
+    background: rgba(0,0,0,0.7); padding: 1px 4px; border-radius: 3px;
+    line-height: 1.3;
+  }
+  .player-dot.thuis .dot { background: #1565C0; color: #fff; }
+  .player-dot.uit .dot { background: #B71C1C; color: #fff; }
 
-  /* TIPS PANEL */
-  .tip-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px;
-    margin-bottom: 12px;
-    border-left: 3px solid var(--groen);
+  /* PITCH CONTROLS */
+  .pitch-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .pitch-legend { display: flex; gap: 16px; align-items: center; margin-bottom: 10px; }
+  .leg-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+
+  /* PLAYER FORM MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; width: 90%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--groen); letter-spacing: 2px; margin-bottom: 16px; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+  /* PLAYER CARDS in speler tab */
+  .speler-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .speler-tab {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
   }
-  .tip-nr {
-    font-family: 'Space Mono', monospace;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--groen);
-    margin-bottom: 6px;
-  }
-  .tip-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .speler-tab.active { background: var(--groen-dim); border-color: var(--groen); color: #fff; font-weight: 700; }
+  .speler-tab .remove-speler { color: #ff8a80; font-size: 14px; line-height: 1; }
+  .add-speler-btn { background: var(--groen); border: none; color: #000; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 700; }
+
+  /* RATINGS */
+  .rating-group { }
+  .rating-label { font-size: 11px; color: var(--text-dim); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stars { display: flex; gap: 3px; flex-wrap: wrap; }
+  .star { width: 26px; height: 26px; background: var(--surface3); border: 1px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; transition: all 0.1s; user-select: none; font-family: 'Space Mono', monospace; }
+  .star:hover, .star.active { background: var(--geel); border-color: var(--geel); color: #000; }
+
+  /* RADAR */
+  .radar-wrap { display: flex; justify-content: center; padding: 10px 0; }
+
+  /* OVERALL */
+  .overall-badge { display: inline-block; background: var(--groen); color: #000; font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; padding: 10px 22px; border-radius: 10px; margin-top: 6px; }
+
+  /* NOTION */
+  .notion-output { background: #1a1f28; border: 1px solid var(--border); border-radius: 10px; padding: 18px; font-family: 'Space Mono', monospace; font-size: 11px; line-height: 1.8; color: #b0bec5; white-space: pre-wrap; max-height: 500px; overflow-y: auto; }
+  .copy-btn { background: var(--accent); border: none; color: #000; padding: 9px 18px; border-radius: 7px; cursor: pointer; font-weight: 700; font-size: 13px; font-family: 'DM Sans', sans-serif; margin-bottom: 10px; }
+
+  /* TIPS */
+  .tip-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 10px; border-left: 3px solid var(--groen); }
+  .tip-nr { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--groen); margin-bottom: 4px; }
+  .tip-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
   .tip-body { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
-  .tip-example {
-    background: var(--surface3);
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin-top: 10px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-  }
+  .tip-example { background: var(--surface3); border-radius: 6px; padding: 7px 11px; margin-top: 8px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); }
 
-  /* RESPONSIVE */
-  @media (max-width: 700px) {
+  .stat-pill { display: flex; justify-content: space-between; align-items: center; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 7px 11px; }
+  .stat-pill-label { font-size: 12px; color: var(--text-dim); }
+  .stat-pill-val { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text); }
+
+  /* EXCEL INFO */
+  .excel-info { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .excel-info code { background: var(--surface3); padding: 2px 6px; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); }
+
+  .upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .upload-zone:hover { border-color: var(--groen); background: var(--surface2); }
+  .upload-zone input { display: none; }
+
+  @media (max-width: 650px) {
     .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
     .fase-grid { grid-template-columns: 1fr; }
-    header { flex-wrap: wrap; gap: 10px; }
-    .tab-btn { padding: 6px 10px; font-size: 12px; }
-  }
-
-  .divider { height: 1px; background: var(--border); margin: 16px 0; }
-
-  .stat-pill {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 8px 12px;
-  }
-  .stat-pill-label { font-size: 12px; color: var(--text-dim); }
-  .stat-pill-val { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--text); }
-
-  .overall-badge {
-    display: inline-block;
-    background: var(--groen);
-    color: #000;
-    font-family: 'Space Mono', monospace;
-    font-size: 28px;
-    font-weight: 700;
-    padding: 12px 24px;
-    border-radius: 10px;
-    margin-top: 8px;
+    .modal-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">⚽ Scout Pro</div>
+  <div class="logo">⚽ SCOUTANA</div>
+  <div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace;">© Andy Mulders</div>
   <div class="tab-bar">
     <button class="tab-btn active" onclick="showTab('wedstrijd')">Wedstrijd</button>
-    <button class="tab-btn" onclick="showTab('speler')">Speler</button>
-    <button class="tab-btn" onclick="showTab('export')">Notion Export</button>
-    <button class="tab-btn" onclick="showTab('tips')">Tips & Tricks</button>
+    <button class="tab-btn" onclick="showTab('veld')">Opstelling</button>
+    <button class="tab-btn" onclick="showTab('speler')">Spelers</button>
+    <button class="tab-btn" onclick="showTab('export')">Export</button>
+    <button class="tab-btn" onclick="showTab('tips')">Tips</button>
   </div>
-  <button class="export-btn" onclick="showTab('export')">↗ Exporteer</button>
 </header>
 
-<!-- ========================== WEDSTRIJD PANEL ========================== -->
+<!-- ====================== WEDSTRIJD ====================== -->
 <div id="panel-wedstrijd" class="panel active">
-
   <div class="section">
     <div class="section-title">Wedstrijdinfo</div>
     <div class="grid-4">
@@ -394,48 +230,37 @@
     </div>
     <div class="divider"></div>
     <div class="grid-2">
-      <div>
-        <label>Thuisploeg</label>
-        <input type="text" id="thuis" placeholder="Ploegnaam">
-      </div>
-      <div>
-        <label>Uitploeg</label>
-        <input type="text" id="uit" placeholder="Ploegnaam">
-      </div>
+      <div><label>Thuisploeg</label><input type="text" id="thuis" placeholder="Ploegnaam" oninput="updateLabels()"></div>
+      <div><label>Uitploeg</label><input type="text" id="uit" placeholder="Ploegnaam" oninput="updateLabels()"></div>
     </div>
     <div class="divider"></div>
-    <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap; margin-top:8px;">
+    <div class="score-wrap">
       <div class="score-box">
-        <input type="number" id="score-thuis" min="0" max="20" value="0"
-          style="background:none;border:none;font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--groen);width:60px;text-align:center;padding:0;">
+        <input type="number" id="score-thuis" class="score-num" min="0" max="20" value="0">
         <div class="score-team" id="label-thuis">Thuis</div>
       </div>
-      <span style="font-family:'Space Mono',monospace;font-size:22px;color:var(--text-dim);">—</span>
+      <span style="font-family:'Space Mono',monospace;font-size:20px;color:var(--text-dim);">—</span>
       <div class="score-box">
-        <input type="number" id="score-uit" min="0" max="20" value="0"
-          style="background:none;border:none;font-family:'Space Mono',monospace;font-size:32px;font-weight:700;color:var(--rood);width:60px;text-align:center;padding:0;">
+        <input type="number" id="score-uit" class="score-num" style="color:var(--rood);" min="0" max="20" value="0">
         <div class="score-team" id="label-uit">Uit</div>
       </div>
-      <div style="flex:1; min-width:160px;">
+      <div style="flex:1;min-width:140px;">
         <label>Formatie Thuis</label>
-        <select id="form-thuis">
+        <select id="form-thuis" onchange="updateFormaties()">
           <option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option>
-          <option>3-5-2</option><option>3-4-3</option><option>5-3-2</option>
-          <option>4-1-4-1</option><option>Anders...</option>
+          <option>3-5-2</option><option>3-4-3</option><option>5-3-2</option><option>4-1-4-1</option>
         </select>
       </div>
-      <div style="flex:1; min-width:160px;">
+      <div style="flex:1;min-width:140px;">
         <label>Formatie Uit</label>
-        <select id="form-uit">
+        <select id="form-uit" onchange="updateFormaties()">
           <option>4-3-3</option><option>4-2-3-1</option><option>4-4-2</option>
-          <option>3-5-2</option><option>3-4-3</option><option>5-3-2</option>
-          <option>4-1-4-1</option><option>Anders...</option>
+          <option>3-5-2</option><option>3-4-3</option><option>5-3-2</option><option>4-1-4-1</option>
         </select>
       </div>
     </div>
   </div>
 
-  <!-- EVENTS -->
   <div class="section">
     <div class="section-title">Evenementenlog</div>
     <div class="event-input-row">
@@ -451,41 +276,27 @@
         <option value="💡">💡 Tactisch moment</option>
         <option value="📝">📝 Notitie</option>
       </select>
-      <input type="text" id="ev-desc" placeholder="Beschrijving (speler, actie...)">
+      <input type="text" id="ev-desc" placeholder="Beschrijving...">
       <button class="add-event-btn" onclick="addEvent()">+</button>
     </div>
     <div class="event-list" id="event-list"></div>
   </div>
 
-  <!-- FASES -->
   <div class="section">
     <div class="section-title">Wedstrijdfasen</div>
     <div class="fase-grid">
-      <div class="fase-card">
-        <div class="fase-name">🏗 Opbouwspel</div>
-        <textarea id="fase-opbouw" placeholder="Hoe bouwt het team op vanuit achter? Druk van tegenstander? Rol van de keeper?"></textarea>
-      </div>
-      <div class="fase-card">
-        <div class="fase-name">⚡ Omschakeling</div>
-        <textarea id="fase-omschak" placeholder="Snelheid van omschakelen aanval↔verdediging? Counters? Reactie bij balverlies?"></textarea>
-      </div>
-      <div class="fase-card">
-        <div class="fase-name">🔒 Verdediging</div>
-        <textarea id="fase-verd" placeholder="Pressing hoogte, man-man of zone, compactheid, ruimtebeheer?"></textarea>
-      </div>
-      <div class="fase-card">
-        <div class="fase-name">📐 Standaardsituaties</div>
-        <textarea id="fase-std" placeholder="Corners, vrije trappen, inworpen. Wie pakt de bal? Aanvalsvariaties?"></textarea>
-      </div>
+      <div class="fase-card"><div class="fase-name">🏗 Opbouwspel</div><textarea id="fase-opbouw" placeholder="Hoe bouwt het team op? Druk tegenstander?"></textarea></div>
+      <div class="fase-card"><div class="fase-name">⚡ Omschakeling</div><textarea id="fase-omschak" placeholder="Snelheid omschakeling? Counters?"></textarea></div>
+      <div class="fase-card"><div class="fase-name">🔒 Verdediging</div><textarea id="fase-verd" placeholder="Pressing hoogte, zone of man-man?"></textarea></div>
+      <div class="fase-card"><div class="fase-name">📐 Standaardsituaties</div><textarea id="fase-std" placeholder="Corners, vrije trappen, variaties?"></textarea></div>
     </div>
   </div>
 
-  <!-- SAMENVATTING -->
   <div class="section">
     <div class="section-title">Ploeganalyse</div>
     <div class="grid-2">
       <div>
-        <label>Sterktes (ploeg als geheel)</label>
+        <label>Sterktes</label>
         <div class="chip-row" id="chips-sterk">
           <span class="chip" onclick="toggleChip(this,'on')">Hoog pressing</span>
           <span class="chip" onclick="toggleChip(this,'on')">Snel opbouwen</span>
@@ -498,7 +309,7 @@
         </div>
       </div>
       <div>
-        <label>Zwaktes / Verbeterpunten</label>
+        <label>Zwaktes</label>
         <div class="chip-row" id="chips-zwak">
           <span class="chip" onclick="toggleChip(this,'bad')">Hoge linie risico</span>
           <span class="chip" onclick="toggleChip(this,'bad')">Trage omschakeling</span>
@@ -506,292 +317,297 @@
           <span class="chip" onclick="toggleChip(this,'bad')">Zwak in koppen</span>
           <span class="chip" onclick="toggleChip(this,'bad')">Geen dieptedreiging</span>
           <span class="chip" onclick="toggleChip(this,'bad')">Weinig creativiteit</span>
-          <span class="chip" onclick="toggleChip(this,'bad')">Mentale weerstand</span>
         </div>
       </div>
     </div>
     <div class="divider"></div>
-    <div><label>Algemene wedstrijdindruk</label>
-      <textarea id="wedstrijd-indruk" placeholder="Samenvatting, tactische sleutelmoment, ploeg van de wedstrijd, opvallende trends..."></textarea>
+    <div><label>Algemene indruk</label><textarea id="wedstrijd-indruk" placeholder="Samenvatting, sleutelmomenten, trends..."></textarea></div>
+  </div>
+</div>
+
+<!-- ====================== VELD / OPSTELLING ====================== -->
+<div id="panel-veld" class="panel">
+
+  <!-- EXCEL IMPORT -->
+  <div class="section">
+    <div class="section-title">📊 Spelers importeren via Excel</div>
+    <div class="excel-info">
+      <p style="color:var(--text-dim);font-size:13px;margin-bottom:10px;">Maak een Excel-bestand met deze <strong style="color:var(--text)">exacte kolomnamen</strong> in rij 1 en sla op als <code>.csv</code>:</p>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;font-family:'Space Mono',monospace;">
+          <tr style="background:var(--surface3);">
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--groen);">team</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--groen);">rugnummer</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--groen);">achternaam</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--groen);">geboortejaar</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--groen);">voet</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--groen);">positie</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">thuis</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">9</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">De Bruyne</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">1991</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">R</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">CAM</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">uit</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">7</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">Trossard</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">1994</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">L</td>
+            <td style="padding:6px 10px;border:1px solid var(--border);color:var(--text-dim);">LW</td>
+          </tr>
+        </table>
+      </div>
+      <p style="color:var(--text-dim);font-size:11px;margin-top:8px;">Posities: GK, CB, LB, RB, CDM, CM, CAM, LM, RM, LW, RW, CF, ST</p>
+      <p style="color:var(--text-dim);font-size:11px;">Team: <code>thuis</code> of <code>uit</code> &nbsp;|&nbsp; Voet: <code>L</code>, <code>R</code> of <code>B</code> (beide)</p>
+    </div>
+    <div class="upload-zone" onclick="document.getElementById('csv-upload').click()">
+      <input type="file" id="csv-upload" accept=".csv" onchange="importCSV(event)">
+      <div style="font-size:28px;margin-bottom:8px;">📂</div>
+      <div style="font-weight:600;margin-bottom:4px;">Klik om CSV te uploaden</div>
+      <div style="color:var(--text-dim);font-size:12px;">of sleep je bestand hiernaartoe</div>
+    </div>
+    <div id="import-feedback" style="margin-top:8px;font-size:13px;color:var(--groen);display:none;"></div>
+  </div>
+
+  <!-- MANUELE TOEVOEGING -->
+  <div class="section">
+    <div class="section-title">✏️ Speler manueel toevoegen</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+      <div style="min-width:70px;"><label>Team</label>
+        <select id="add-team">
+          <option value="thuis">Thuis</option>
+          <option value="uit">Uit</option>
+        </select>
+      </div>
+      <div style="width:60px;"><label>Nr</label><input type="number" id="add-nr" placeholder="#" min="1" max="99"></div>
+      <div style="flex:1;min-width:120px;"><label>Achternaam</label><input type="text" id="add-naam" placeholder="Naam"></div>
+      <div style="width:80px;"><label>Geb.jaar</label><input type="number" id="add-jaar" placeholder="2000" min="1970" max="2015"></div>
+      <div style="width:70px;"><label>Voet</label>
+        <select id="add-voet"><option value="R">R</option><option value="L">L</option><option value="B">B</option></select>
+      </div>
+      <div style="width:80px;"><label>Positie</label>
+        <select id="add-pos">
+          <option>GK</option><option>CB</option><option>LB</option><option>RB</option>
+          <option>CDM</option><option>CM</option><option>CAM</option>
+          <option>LM</option><option>RM</option><option>LW</option><option>RW</option>
+          <option>CF</option><option>ST</option>
+        </select>
+      </div>
+      <button class="btn btn-groen" onclick="addPlayerManual()">+ Toevoegen</button>
+    </div>
+  </div>
+
+  <!-- VELD -->
+  <div class="section">
+    <div class="section-title">🟢 Opstelling op het veld</div>
+    <div class="pitch-legend">
+      <span><span class="leg-dot" style="background:#1565C0;"></span> <span style="font-size:12px;" id="legend-thuis">Thuis</span></span>
+      <span><span class="leg-dot" style="background:#B71C1C;"></span> <span style="font-size:12px;" id="legend-uit">Uit</span></span>
+      <span style="font-size:11px;color:var(--text-dim);margin-left:8px;">Klik op een speler om te bewerken / verwijderen</span>
+    </div>
+    <div class="pitch-controls">
+      <button class="btn btn-ghost" style="font-size:12px;" onclick="clearTeam('thuis')">🗑 Thuis wissen</button>
+      <button class="btn btn-ghost" style="font-size:12px;" onclick="clearTeam('uit')">🗑 Uit wissen</button>
+      <button class="btn btn-ghost" style="font-size:12px;" onclick="autoPositionAll()">🔄 Auto-positioneer</button>
+    </div>
+    <div class="pitch-container" id="pitch-container">
+      <div class="pitch-svg-wrap">
+        <svg viewBox="0 0 500 750" xmlns="http://www.w3.org/2000/svg">
+          <!-- Veld achtergrond -->
+          <rect width="500" height="750" fill="#2d5a27"/>
+          <!-- Strepen -->
+          <rect x="0" y="0" width="500" height="75" fill="#2a5525" opacity="0.5"/>
+          <rect x="0" y="150" width="500" height="75" fill="#2a5525" opacity="0.5"/>
+          <rect x="0" y="300" width="500" height="75" fill="#2a5525" opacity="0.5"/>
+          <rect x="0" y="450" width="500" height="75" fill="#2a5525" opacity="0.5"/>
+          <rect x="0" y="600" width="500" height="75" fill="#2a5525" opacity="0.5"/>
+          <!-- Lijnen -->
+          <rect x="30" y="30" width="440" height="690" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <!-- Middellijn -->
+          <line x1="30" y1="375" x2="470" y2="375" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <!-- Middencirkel -->
+          <circle cx="250" cy="375" r="60" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <circle cx="250" cy="375" r="4" fill="rgba(255,255,255,0.8)"/>
+          <!-- Strafschopgebied boven (thuis verdedigt) -->
+          <rect x="130" y="30" width="240" height="90" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <rect x="190" y="30" width="120" height="45" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <circle cx="250" cy="105" r="3" fill="rgba(255,255,255,0.8)"/>
+          <path d="M 200 120 A 60 60 0 0 1 300 120" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <!-- Goal boven -->
+          <rect x="210" y="20" width="80" height="15" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <!-- Strafschopgebied onder (uit verdedigt) -->
+          <rect x="130" y="630" width="240" height="90" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <rect x="190" y="675" width="120" height="45" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <circle cx="250" cy="645" r="3" fill="rgba(255,255,255,0.8)"/>
+          <path d="M 200 630 A 60 60 0 0 0 300 630" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <!-- Goal onder -->
+          <rect x="210" y="715" width="80" height="15" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+          <!-- Hoekbogen -->
+          <path d="M 30 50 A 20 20 0 0 0 50 30" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+          <path d="M 450 30 A 20 20 0 0 0 470 50" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+          <path d="M 30 700 A 20 20 0 0 1 50 720" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+          <path d="M 470 700 A 20 20 0 0 0 450 720" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div id="players-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></div>
     </div>
   </div>
 </div>
 
-<!-- ========================== SPELER PANEL ========================== -->
-<div id="panel-speler" class="panel">
-
-  <div class="section">
-    <div class="section-title">Spelersinfo</div>
-    <div class="grid-4">
-      <div><label>Naam</label><input type="text" id="s-naam" placeholder="Volledige naam"></div>
-      <div><label>Rugnummer</label><input type="number" id="s-nr" placeholder="#"></div>
+<!-- PLAYER MODAL -->
+<div class="modal-overlay" id="playerModal">
+  <div class="modal">
+    <div class="modal-title">SPELER BEWERKEN</div>
+    <input type="hidden" id="modal-player-id">
+    <div class="modal-grid">
+      <div><label>Rugnummer</label><input type="number" id="modal-nr" min="1" max="99"></div>
+      <div><label>Achternaam</label><input type="text" id="modal-naam"></div>
+      <div><label>Geboortejaar</label><input type="number" id="modal-jaar" min="1970" max="2015"></div>
+      <div><label>Beste voet</label>
+        <select id="modal-voet"><option value="R">Rechts (R)</option><option value="L">Links (L)</option><option value="B">Beide (B)</option></select>
+      </div>
       <div><label>Positie</label>
-        <select id="s-positie">
-          <option>Aanvaller (CF)</option><option>Rechtsbuiten (RW)</option>
-          <option>Linksbuiten (LW)</option><option>Valse 9</option>
-          <option>Tweede spits</option><option>Aanvallende middenvelder (10)</option>
-          <option>Centrale middenvelder</option><option>Defensieve middenvelder</option>
-          <option>Rechtsback</option><option>Linksback</option>
-          <option>Centrale verdediger</option><option>Keeper</option>
+        <select id="modal-pos">
+          <option>GK</option><option>CB</option><option>LB</option><option>RB</option>
+          <option>CDM</option><option>CM</option><option>CAM</option>
+          <option>LM</option><option>RM</option><option>LW</option><option>RW</option>
+          <option>CF</option><option>ST</option>
         </select>
       </div>
-      <div><label>Ploeg</label><input type="text" id="s-ploeg" placeholder="Clubnaam"></div>
-    </div>
-    <div class="grid-4" style="margin-top:12px;">
-      <div><label>Speeltijd (min)</label><input type="number" id="s-min" placeholder="90"></div>
-      <div><label>Doelpunten</label><input type="number" id="s-goals" value="0" min="0"></div>
-      <div><label>Assists</label><input type="number" id="s-assists" value="0" min="0"></div>
-      <div><label>Schoten op doel</label><input type="number" id="s-shots" value="0" min="0"></div>
-    </div>
-  </div>
-
-  <!-- ATTRIBUTEN RATINGS -->
-  <div class="section">
-    <div class="section-title">Kwaliteiten (klik op ster om te scoren)</div>
-    <div class="grid-3" id="ratings-container">
-    </div>
-  </div>
-
-  <!-- RADAR CHART -->
-  <div class="section">
-    <div class="section-title">Radar Profiel</div>
-    <div class="radar-wrap">
-      <canvas id="radarCanvas" width="360" height="360"></canvas>
-    </div>
-  </div>
-
-  <!-- SPELER OBSERVATIES -->
-  <div class="section">
-    <div class="section-title">Gedetailleerde Observaties</div>
-    <div class="fase-grid">
-      <div class="fase-card">
-        <div class="fase-name">🏃 Met de bal</div>
-        <textarea id="obs-met" placeholder="Techniek, eerste aanname, dribbel, passvermogen, schot, creativiteit..."></textarea>
-      </div>
-      <div class="fase-card">
-        <div class="fase-name">🔍 Zonder de bal</div>
-        <textarea id="obs-zonder" placeholder="Loopacties, vrijlopen, pressing, afdekken, ruimtecreatie..."></textarea>
-      </div>
-      <div class="fase-card">
-        <div class="fase-name">🧠 Tactisch</div>
-        <textarea id="obs-tact" placeholder="Positionering, beslissingssnelheid, leiderschap, communicatie..."></textarea>
-      </div>
-      <div class="fase-card">
-        <div class="fase-name">💪 Fysiek & Mentaal</div>
-        <textarea id="obs-fys" placeholder="Snelheid, kracht, sprongvermogen, uithouding, veerkracht, mentale weerbaarheid..."></textarea>
+      <div><label>Team</label>
+        <select id="modal-team"><option value="thuis">Thuis</option><option value="uit">Uit</option></select>
       </div>
     </div>
-    <div class="divider"></div>
-    <div class="grid-2">
-      <div>
-        <label>Sterkste momenten deze match</label>
-        <textarea id="s-sterk" placeholder="Beschrijf 2-3 concrete acties of momenten die imponeerden..."></textarea>
-      </div>
-      <div>
-        <label>Zwakkere momenten / aandachtspunten</label>
-        <textarea id="s-zwak" placeholder="Momenten van twijfel, fouten, tactische keuzes die beter konden..."></textarea>
-      </div>
-    </div>
-    <div class="divider"></div>
-    <div class="grid-2">
-      <div>
-        <label>Eindscore speler</label>
-        <div id="final-stars" class="stars" style="gap:8px;">
-        </div>
-        <div class="overall-badge" id="overall-display">–</div>
-      </div>
-      <div>
-        <label>Scout aanbeveling</label>
-        <select id="s-advies">
-          <option value="">— Selecteer —</option>
-          <option>✅ Aanbevolen voor transfer</option>
-          <option>👀 Verder volgen (2e observatie)</option>
-          <option>📋 Interessant voor komende zomer</option>
-          <option>⛔ Niet relevant op dit moment</option>
-          <option>🔄 Herbekijken andere positie</option>
-        </select>
-        <div style="margin-top:8px;">
-          <label>Transferwaarde inschatting</label>
-          <input type="text" id="s-waarde" placeholder="b.v. €4M – €7M">
-        </div>
-      </div>
+    <div class="modal-actions">
+      <button class="btn btn-groen" onclick="savePlayerModal()">Opslaan</button>
+      <button class="btn btn-red" onclick="deletePlayerModal()">Verwijderen</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Annuleren</button>
     </div>
   </div>
 </div>
 
-<!-- ========================== EXPORT PANEL ========================== -->
+<!-- ====================== SPELERS ====================== -->
+<div id="panel-speler" class="panel">
+  <div class="section">
+    <div class="section-title">Spelers beheren</div>
+    <div class="speler-tabs" id="speler-tabs"></div>
+    <button class="add-speler-btn" onclick="addNewSpeler()">+ Nieuwe speler</button>
+  </div>
+  <div id="speler-form-container"></div>
+</div>
+
+<!-- ====================== EXPORT ====================== -->
 <div id="panel-export" class="panel">
   <div class="section">
     <div class="section-title">Notion Export</div>
-    <p style="color:var(--text-dim); font-size:13px; margin-bottom:16px; line-height:1.6;">
-      Kopieer de tekst hieronder en plak hem in een Notion-pagina. Gebruik <strong style="color:var(--text)">Ctrl+Shift+V</strong> om zonder opmaak te plakken, of plak in een <strong style="color:var(--text)">Code block</strong> voor mooie weergave.
-    </p>
+    <p style="color:var(--text-dim);font-size:13px;margin-bottom:14px;">Kopieer en plak in Notion via <strong style="color:var(--text)">Ctrl+Shift+V</strong></p>
     <button class="copy-btn" onclick="copyNotion()">📋 Kopieer naar klembord</button>
-    <div class="notion-output" id="notion-output">Vul eerst de wedstrijd- en spelergegevens in...</div>
+    <div class="notion-output" id="notion-output">Vul eerst de gegevens in...</div>
   </div>
-
   <div class="section">
     <div class="section-title">Notion Template Structuur</div>
-    <p style="color:var(--text-dim); font-size:13px; margin-bottom:16px; line-height:1.6;">
-      Maak in Notion een nieuwe database aan met deze properties voor herhalend gebruik:
-    </p>
     <div class="notion-output">📁 DATABASE: "Scouting Rapporten"
 
 PROPERTIES:
-→ Datum           [Date]
-→ Competitie      [Select]  
-→ Thuisploeg      [Text]
-→ Uitploeg        [Text]
-→ Score           [Text]
-→ Gescoute Speler [Text]
-→ Positie         [Select: CF / LW / RW / MID / DEF / GK]
-→ Eindscore       [Number: 1–10]
-→ Aanbeveling     [Select: Transfer / Volgen / Niet relevant]
-→ Waarde          [Text]
-→ Status          [Select: Concept / Afgerond / Gedeeld]
-
-PAGINA STRUCTUUR PER RAPPORT:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# [Thuisploeg] vs [Uitploeg] — [Datum]
-
-## 📋 Wedstrijdoverzicht
-> Competitie | Ronde | Stadion | Score
-
-## ⏱ Evenementenlog
-| Min | Type | Beschrijving |
-|-----|------|--------------|
-
-## 🔍 Wedstrijdfasen
-### Opbouwspel
-### Omschakeling  
-### Verdediging
-### Standaardsituaties
-
-## 👤 Spelersanalyse: [Naam] #[Nr]
-> Positie | Ploeg | Speeltijd
-
-### Statistieken
-| Goals | Assists | Schoten | Score |
-
-### Radar Profiel
-[Plak hier de scores per kwaliteit]
-
-### Observaties
-> Met de bal / Zonder de bal / Tactisch / Fysiek
-
-### Eindbeoordeling
-> Aanbeveling | Waarde | Volgende stap
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+→ Wedstrijd        [Title]
+→ Datum            [Date]
+→ Competitie       [Select]
+→ Score            [Text]
+→ Gescoute Speler  [Text]
+→ Positie          [Select]
+→ Eindscore        [Number]
+→ Aanbeveling      [Select: Transfer / Volgen / Niet relevant]
+→ Waarde           [Text]
+→ Status           [Select: Concept / Afgerond / Gedeeld]</div>
   </div>
 </div>
 
-<!-- ========================== TIPS PANEL ========================== -->
+<!-- ====================== TIPS ====================== -->
 <div id="panel-tips" class="panel">
-
   <div class="tip-card">
     <div class="tip-nr">01</div>
     <div class="tip-title">⏱ Tijdstempel ALLES</div>
-    <div class="tip-body">Bij professionele analyse is context cruciaal. Noteer altijd de minuut bij elke observatie. Een actie in minuut 12 (fris) heeft een andere waarde dan dezelfde actie in minuut 87 (moe). Gebruik de evenementenlog hiervoor.</div>
+    <div class="tip-body">Noteer altijd de minuut bij elke observatie. Een actie in minuut 12 (fris) heeft een andere waarde dan dezelfde actie in minuut 87 (moe).</div>
     <div class="tip-example">'34 – #9 verliest bal bij hoge bal → geen second press → counter tegenstander</div>
   </div>
-
   <div class="tip-card">
     <div class="tip-nr">02</div>
     <div class="tip-title">✏️ Feit vs. Interpretatie</div>
-    <div class="tip-body">Houd deze twee strikt gescheiden in je notities. Feiten zijn objectief meetbaar, interpretaties zijn jouw analyse. Beide zijn waardevol, maar een goede scout weet het verschil.</div>
+    <div class="tip-body">Houd deze twee strikt gescheiden. Feiten zijn objectief meetbaar, interpretaties zijn jouw analyse. Beide zijn waardevol maar apart houden.</div>
     <div class="tip-example">FEIT: "3 balverliezen in opbouw 1e helft"
-INTERPRETATIE: "Twijfelachtig onder pressing — prefers easy passes"</div>
+INTERPRETATIE: "Twijfelachtig onder pressing"</div>
   </div>
-
   <div class="tip-card">
     <div class="tip-nr">03</div>
     <div class="tip-title">🎯 Focus op de speler ZONDER bal</div>
-    <div class="tip-body">80% van de wedstrijd heeft een professionele aanvaller de bal niet. Observeer zijn/haar loopacties, ruimtecreatie voor medespelers, pressing-inspanning en positionering. Dit onderscheidt gemiddeld van toptalent.</div>
-    <div class="tip-example">Check elke 5 min: waar staat #[nr] als het spel ver van hem is? Loopt hij mee? Communiceert hij?</div>
+    <div class="tip-body">80% van de wedstrijd heeft een professionele aanvaller de bal niet. Observeer loopacties, ruimtecreatie, pressing-inspanning en positionering.</div>
+    <div class="tip-example">Check elke 5 min: waar staat #[nr] als het spel ver van hem is?</div>
   </div>
-
   <div class="tip-card">
     <div class="tip-nr">04</div>
-    <div class="tip-title">📐 Analyseer 3 fases apart</div>
-    <div class="tip-body">Verdeel elke observatie in: <strong style="color:var(--text)">aanval</strong> (team in balbezit), <strong style="color:var(--text)">verdediging</strong> (zonder bal) en <strong style="color:var(--text)">transitie</strong> (omschakelmomenten). De transitiefase onthult het meest over tactische intelligentie.</div>
-    <div class="tip-example">Na balverlies #9: loopt hij direct pressing? Of wandelt hij terug? Telt zwaar mee in pro-rapport.</div>
+    <div class="tip-title">🔡 Afkortingen systeem</div>
+    <div class="tip-body">Maak je eigen systeem en houd het consistent. Snelheid ter plaatse is cruciaal — mis nooit een actie omdat je aan het schrijven bent.</div>
+    <div class="tip-example">BV=balverlies | GK=gemiste kans | 1v1✓=gewonnen duel | DPas=dieptepass</div>
   </div>
-
   <div class="tip-card">
     <div class="tip-nr">05</div>
-    <div class="tip-title">🔡 Gebruik afkortingen</div>
-    <div class="tip-body">Maak je eigen systeem en houd het consistent. Snelheid ter plaatse is cruciaal — je mag nooit een actie missen omdat je aan het schrijven bent.</div>
-    <div class="tip-example">BV = balverlies | GK = gemiste kans | 1v1✓ = gewonnen duel | 1v1✗ = verloren duel
-DPas = dieptepass | DRib = dribbel | AAN = aanname | 2e paal = 2e paal aanloop</div>
+    <div class="tip-title">📊 Excel import — hoe doe je dat?</div>
+    <div class="tip-body">Maak je spelerslijst op voorhand in Excel. Sla op via <strong style="color:var(--text)">Bestand → Opslaan als → CSV (komma's als scheidingsteken)</strong>. Upload daarna in het Opstelling tabblad.</div>
+    <div class="tip-example">tip: gebruik semikolon (;) als scheidingsteken als komma problemen geeft → pas dan de import aan</div>
   </div>
-
-  <div class="tip-card">
-    <div class="tip-nr">06</div>
-    <div class="tip-title">🔄 Noteer standaardsituaties apart</div>
-    <div class="tip-body">Corners, vrije trappen en inworpen leveren 25–30% van alle profgoals. Noteer de variaties, wie de vaste uitvoerder is, looppatronen en de aanvaller zijn gedrag in de 16-meter zone.</div>
-    <div class="tip-example">'23 – corner links: near post run #9 → geen bal maar trok verdediger weg → #4 scoorde free header</div>
-  </div>
-
-  <div class="tip-card">
-    <div class="tip-nr">07</div>
-    <div class="tip-title">📊 Gebruik de radar spaarzaam maar gericht</div>
-    <div class="tip-body">Scoor pas NADAT de wedstrijd klaar is. Een radarscore halverwege de match is misleidend — een speler kan in de 2e helft het beeld volledig veranderen. Geef scores 1–10 maar maak ze relatief t.o.v. het niveau (pro ≠ amateur).</div>
-    <div class="tip-example">Een 7/10 snelheid in de JPL is anders dan 7/10 in Champions League. Noteer altijd je referentiekader.</div>
-  </div>
-
-  <div class="tip-card">
-    <div class="tip-nr">08</div>
-    <div class="tip-title">🏟 Vergeet de context niet</div>
-    <div class="tip-body">Was het een derby? Stond de ploeg 0-2 achter? Regen en zwaar veld? Dit beïnvloedt elke observatie. Noteer altijd de omstandigheden bij je rapport — een recruiteur die jouw rapport later leest, was er niet bij.</div>
-    <div class="tip-example">Context: thuisderby, 0-2 achter na 55', nat kunstgras, #9 net hersteld van blessure (1e basisplaats)</div>
-  </div>
-
-  <div class="section" style="margin-top:16px;">
+  <div class="section" style="margin-top:12px;">
     <div class="section-title">Notion Sneltoetsen</div>
     <div class="grid-2">
-      <div class="stat-pill"><span class="stat-pill-label">/ – Nieuw bloktype</span><span class="stat-pill-val" style="color:var(--accent)">Slash</span></div>
-      <div class="stat-pill"><span class="stat-pill-label">@[datum] – Datumverwijzing</span><span class="stat-pill-val" style="color:var(--accent)">@</span></div>
-      <div class="stat-pill"><span class="stat-pill-label">Ctrl+Shift+V – Plak zonder opmaak</span><span class="stat-pill-val" style="color:var(--accent)">⌘⇧V</span></div>
-      <div class="stat-pill"><span class="stat-pill-label">[] – Snelle checkbox</span><span class="stat-pill-val" style="color:var(--accent)">[ ]</span></div>
-      <div class="stat-pill"><span class="stat-pill-label">:: – Database property invoegen</span><span class="stat-pill-val" style="color:var(--accent)">::</span></div>
-      <div class="stat-pill"><span class="stat-pill-label">Ctrl+\ – Fullscreen focus modus</span><span class="stat-pill-val" style="color:var(--accent)">⌘\</span></div>
+      <div class="stat-pill"><span class="stat-pill-label">/ – Nieuw bloktype</span><span class="stat-pill-val" style="color:var(--accent);">Slash</span></div>
+      <div class="stat-pill"><span class="stat-pill-label">Ctrl+Shift+V – Plak zonder opmaak</span><span class="stat-pill-val" style="color:var(--accent);">⌘⇧V</span></div>
+      <div class="stat-pill"><span class="stat-pill-label">[] – Snelle checkbox</span><span class="stat-pill-val" style="color:var(--accent);">[ ]</span></div>
+      <div class="stat-pill"><span class="stat-pill-label">@datum – Datumverwijzing</span><span class="stat-pill-val" style="color:var(--accent);">@</span></div>
     </div>
   </div>
 </div>
 
 <script>
+// =================== GLOBALS ===================
+let events = [];
+let players = []; // { id, team, nr, naam, jaar, voet, positie, x, y }
+let spelersData = []; // array of player assessments
+let activeSpelerId = null;
+let editModalPlayerId = null;
+
 // =================== TABS ===================
 function showTab(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
+  const labels = { wedstrijd: 'wedstrijd', veld: 'opstelling', speler: 'spelers', export: 'export', tips: 'tips' };
   document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.textContent.toLowerCase().includes(name === 'wedstrijd' ? 'wedstrijd' :
-        name === 'speler' ? 'speler' : name === 'export' ? 'notion' : 'tips')) {
-      b.classList.add('active');
-    }
+    if (b.textContent.trim().toLowerCase() === labels[name]) b.classList.add('active');
   });
   if (name === 'export') generateNotion();
-  if (name === 'speler') drawRadar();
+  if (name === 'veld') renderPlayers();
 }
 
-// =================== TEAM LABELS ===================
-document.getElementById('thuis').addEventListener('input', () => {
-  document.getElementById('label-thuis').textContent = document.getElementById('thuis').value || 'Thuis';
-});
-document.getElementById('uit').addEventListener('input', () => {
-  document.getElementById('label-uit').textContent = document.getElementById('uit').value || 'Uit';
-});
+// =================== WEDSTRIJD ===================
+function updateLabels() {
+  const t = document.getElementById('thuis').value || 'Thuis';
+  const u = document.getElementById('uit').value || 'Uit';
+  document.getElementById('label-thuis').textContent = t;
+  document.getElementById('label-uit').textContent = u;
+  document.getElementById('legend-thuis').textContent = t;
+  document.getElementById('legend-uit').textContent = u;
+}
 
-// =================== EVENTS ===================
-let events = [];
 function addEvent() {
   const min = document.getElementById('ev-min').value;
   const type = document.getElementById('ev-type').value;
   const desc = document.getElementById('ev-desc').value.trim();
   if (!min || !desc) return;
   events.push({ min: parseInt(min), type, desc });
-  events.sort((a,b) => a.min - b.min);
+  events.sort((a, b) => a.min - b.min);
   renderEvents();
   document.getElementById('ev-min').value = '';
   document.getElementById('ev-desc').value = '';
@@ -804,34 +620,238 @@ function renderEvents() {
   events.forEach((ev, i) => {
     const div = document.createElement('div');
     div.className = 'event-item';
-    div.innerHTML = `<span class="event-min">${ev.min}'</span>
-      <span class="event-type">${ev.type}</span>
-      <span class="event-desc">${ev.desc}</span>
-      <button class="del-btn" onclick="delEvent(${i})">×</button>`;
+    div.innerHTML = `<span class="event-min">${ev.min}'</span><span class="event-type">${ev.type}</span><span class="event-desc">${ev.desc}</span><button class="del-btn" onclick="delEvent(${i})">×</button>`;
     list.appendChild(div);
   });
 }
 
-function delEvent(i) {
-  events.splice(i, 1);
-  renderEvents();
+function delEvent(i) { events.splice(i, 1); renderEvents(); }
+document.getElementById('ev-desc').addEventListener('keydown', e => { if (e.key === 'Enter') addEvent(); });
+
+function toggleChip(el, mode) {
+  if (el.classList.contains(mode)) { el.classList.remove(mode); }
+  else { el.classList.remove('on', 'bad'); el.classList.add(mode); }
 }
 
-document.getElementById('ev-desc').addEventListener('keydown', e => {
-  if (e.key === 'Enter') addEvent();
-});
+// =================== PLAYERS / VELD ===================
+const positionDefaults = {
+  // Thuis: speelt van boven naar onder (GK bovenaan)
+  thuis: {
+    GK:  { x: 50, y: 7 },
+    CB:  [{ x: 35, y: 18 }, { x: 65, y: 18 }],
+    LB:  { x: 15, y: 20 },
+    RB:  { x: 85, y: 20 },
+    CDM: [{ x: 35, y: 32 }, { x: 65, y: 32 }],
+    CM:  [{ x: 25, y: 38 }, { x: 50, y: 36 }, { x: 75, y: 38 }],
+    CAM: { x: 50, y: 42 },
+    LM:  { x: 15, y: 38 },
+    RM:  { x: 85, y: 38 },
+    LW:  { x: 15, y: 44 },
+    RW:  { x: 85, y: 44 },
+    CF:  { x: 50, y: 48 },
+    ST:  [{ x: 38, y: 48 }, { x: 62, y: 48 }],
+  },
+  // Uit: speelt van onder naar boven (GK onderaan)
+  uit: {
+    GK:  { x: 50, y: 93 },
+    CB:  [{ x: 35, y: 82 }, { x: 65, y: 82 }],
+    LB:  { x: 85, y: 80 },
+    RB:  { x: 15, y: 80 },
+    CDM: [{ x: 35, y: 68 }, { x: 65, y: 68 }],
+    CM:  [{ x: 25, y: 62 }, { x: 50, y: 64 }, { x: 75, y: 62 }],
+    CAM: { x: 50, y: 58 },
+    LM:  { x: 85, y: 62 },
+    RM:  { x: 15, y: 62 },
+    LW:  { x: 85, y: 56 },
+    RW:  { x: 15, y: 56 },
+    CF:  { x: 50, y: 52 },
+    ST:  [{ x: 38, y: 52 }, { x: 62, y: 52 }],
+  }
+};
 
-// =================== CHIPS ===================
-function toggleChip(el, mode) {
-  if (el.classList.contains(mode)) {
-    el.classList.remove(mode);
-  } else {
-    el.classList.remove('on', 'bad');
-    el.classList.add(mode);
+let posCounters = {};
+
+function getDefaultPos(team, positie) {
+  const key = team + '_' + positie;
+  if (!posCounters[key]) posCounters[key] = 0;
+  const def = positionDefaults[team][positie];
+  if (!def) return { x: 50, y: 50 };
+  if (Array.isArray(def)) {
+    const pos = def[posCounters[key] % def.length];
+    posCounters[key]++;
+    return { x: pos.x, y: pos.y };
+  }
+  return { x: def.x, y: def.y };
+}
+
+function addPlayerManual() {
+  const team = document.getElementById('add-team').value;
+  const nr = document.getElementById('add-nr').value;
+  const naam = document.getElementById('add-naam').value.trim();
+  const jaar = document.getElementById('add-jaar').value;
+  const voet = document.getElementById('add-voet').value;
+  const positie = document.getElementById('add-pos').value;
+  if (!naam) { alert('Vul minstens een naam in.'); return; }
+  const pos = getDefaultPos(team, positie);
+  players.push({ id: Date.now() + Math.random(), team, nr: nr || '?', naam, jaar: jaar || '—', voet, positie, x: pos.x, y: pos.y });
+  renderPlayers();
+  document.getElementById('add-naam').value = '';
+  document.getElementById('add-nr').value = '';
+}
+
+function importCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    // detect delimiter
+    const delim = text.indexOf(';') > text.indexOf(',') && text.split(';').length > text.split(',').length ? ';' : ',';
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) { alert('CSV lijkt leeg.'); return; }
+    const headers = lines[0].split(delim).map(h => h.trim().toLowerCase().replace(/"/g, ''));
+    const idx = {
+      team: headers.indexOf('team'),
+      nr: headers.indexOf('rugnummer'),
+      naam: headers.indexOf('achternaam'),
+      jaar: headers.indexOf('geboortejaar'),
+      voet: headers.indexOf('voet'),
+      positie: headers.indexOf('positie'),
+    };
+    posCounters = {};
+    let count = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(delim).map(c => c.trim().replace(/"/g, ''));
+      if (cols.length < 2) continue;
+      const team = (cols[idx.team] || 'thuis').toLowerCase();
+      const nr = cols[idx.nr] || '?';
+      const naam = cols[idx.naam] || 'Onbekend';
+      const jaar = cols[idx.jaar] || '—';
+      const voet = cols[idx.voet] || 'R';
+      const positie = cols[idx.positie] || 'CM';
+      const pos = getDefaultPos(team, positie);
+      players.push({ id: Date.now() + Math.random() + i, team, nr, naam, jaar, voet, positie, x: pos.x, y: pos.y });
+      count++;
+    }
+    const fb = document.getElementById('import-feedback');
+    fb.textContent = `✅ ${count} spelers geïmporteerd!`;
+    fb.style.display = 'block';
+    renderPlayers();
+    showTab('veld');
+  };
+  reader.readAsText(file);
+}
+
+function renderPlayers() {
+  const container = document.getElementById('pitch-container');
+  const overlay = document.getElementById('players-overlay');
+  overlay.style.pointerEvents = 'auto';
+  overlay.innerHTML = '';
+  players.forEach(p => {
+    const dot = document.createElement('div');
+    dot.className = `player-dot ${p.team}`;
+    dot.style.left = p.x + '%';
+    dot.style.top = p.y + '%';
+    dot.innerHTML = `
+      <div class="dot">${p.nr}</div>
+      <div class="pname">${p.naam}<br><span style="color:var(--geel)">${p.jaar}</span> · ${p.voet}</div>
+    `;
+    dot.addEventListener('click', () => openPlayerModal(p.id));
+    // drag support
+    dot.style.position = 'absolute';
+    makeDraggable(dot, p);
+    overlay.appendChild(dot);
+  });
+}
+
+function makeDraggable(el, player) {
+  let dragging = false, startX, startY, origLeft, origTop;
+  const onDown = (cx, cy) => {
+    dragging = true;
+    startX = cx; startY = cy;
+    origLeft = parseFloat(el.style.left);
+    origTop = parseFloat(el.style.top);
+  };
+  const onMove = (cx, cy) => {
+    if (!dragging) return;
+    const container = document.getElementById('pitch-container');
+    const rect = container.getBoundingClientRect();
+    const dx = ((cx - startX) / rect.width) * 100;
+    const dy = ((cy - startY) / rect.height) * 100;
+    const nx = Math.max(3, Math.min(97, origLeft + dx));
+    const ny = Math.max(3, Math.min(97, origTop + dy));
+    el.style.left = nx + '%';
+    el.style.top = ny + '%';
+    player.x = nx;
+    player.y = ny;
+  };
+  const onUp = () => { dragging = false; };
+
+  el.addEventListener('mousedown', e => { onDown(e.clientX, e.clientY); e.preventDefault(); });
+  window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', onUp);
+  el.addEventListener('touchstart', e => { const t = e.touches[0]; onDown(t.clientX, t.clientY); }, { passive: true });
+  el.addEventListener('touchmove', e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); e.preventDefault(); }, { passive: false });
+  el.addEventListener('touchend', onUp);
+}
+
+function openPlayerModal(id) {
+  const p = players.find(x => x.id === id);
+  if (!p) return;
+  editModalPlayerId = id;
+  document.getElementById('modal-nr').value = p.nr;
+  document.getElementById('modal-naam').value = p.naam;
+  document.getElementById('modal-jaar').value = p.jaar !== '—' ? p.jaar : '';
+  document.getElementById('modal-voet').value = p.voet;
+  document.getElementById('modal-pos').value = p.positie;
+  document.getElementById('modal-team').value = p.team;
+  document.getElementById('playerModal').classList.add('open');
+}
+
+function savePlayerModal() {
+  const p = players.find(x => x.id === editModalPlayerId);
+  if (!p) return;
+  p.nr = document.getElementById('modal-nr').value || '?';
+  p.naam = document.getElementById('modal-naam').value;
+  p.jaar = document.getElementById('modal-jaar').value || '—';
+  p.voet = document.getElementById('modal-voet').value;
+  p.positie = document.getElementById('modal-pos').value;
+  p.team = document.getElementById('modal-team').value;
+  closeModal();
+  renderPlayers();
+}
+
+function deletePlayerModal() {
+  players = players.filter(x => x.id !== editModalPlayerId);
+  closeModal();
+  renderPlayers();
+}
+
+function closeModal() {
+  document.getElementById('playerModal').classList.remove('open');
+  editModalPlayerId = null;
+}
+
+function clearTeam(team) {
+  if (confirm(`Alle ${team} spelers verwijderen?`)) {
+    players = players.filter(p => p.team !== team);
+    renderPlayers();
   }
 }
 
-// =================== RATINGS ===================
+function autoPositionAll() {
+  posCounters = {};
+  players.forEach(p => {
+    const pos = getDefaultPos(p.team, p.positie);
+    p.x = pos.x;
+    p.y = pos.y;
+  });
+  renderPlayers();
+}
+
+function updateFormaties() { /* Could auto-arrange based on formation */ }
+
+// =================== SPELERS BEOORDELINGEN ===================
 const attributes = [
   { key: 'snelheid', label: '⚡ Snelheid' },
   { key: 'techniek', label: '🎯 Techniek' },
@@ -847,262 +867,360 @@ const attributes = [
   { key: 'kracht', label: '💪 Kracht' },
 ];
 
-const ratings = {};
-attributes.forEach(a => ratings[a.key] = 0);
+function createNewSpelerData(id) {
+  const ratings = {};
+  attributes.forEach(a => ratings[a.key] = 0);
+  return {
+    id,
+    naam: 'Nieuwe Speler',
+    nr: '',
+    positie: 'Aanvaller (CF)',
+    ploeg: '',
+    geboortedatum: '',
+    voet: 'R',
+    wapen: '',
+    speelmin: 90,
+    goals: 0,
+    assists: 0,
+    shots: 0,
+    ratings,
+    finalRating: 0,
+    obs_met: '',
+    obs_zonder: '',
+    obs_tact: '',
+    obs_fys: '',
+    s_sterk: '',
+    s_zwak: '',
+    advies: '',
+    waarde: '',
+  };
+}
 
-const container = document.getElementById('ratings-container');
-attributes.forEach(attr => {
-  const wrap = document.createElement('div');
-  wrap.className = 'rating-group';
-  wrap.innerHTML = `<div class="rating-label">${attr.label}</div>
-    <div class="stars" id="stars-${attr.key}"></div>`;
-  container.appendChild(wrap);
-  const starsDiv = wrap.querySelector('.stars');
+function addNewSpeler() {
+  const id = Date.now();
+  spelersData.push(createNewSpelerData(id));
+  activeSpelerId = id;
+  renderSpelerTabs();
+  renderSpelerForm();
+}
+
+function renderSpelerTabs() {
+  const container = document.getElementById('speler-tabs');
+  container.innerHTML = '';
+  spelersData.forEach(s => {
+    const tab = document.createElement('div');
+    tab.className = 'speler-tab' + (s.id === activeSpelerId ? ' active' : '');
+    tab.innerHTML = `<span onclick="switchSpeler(${s.id})">${s.naam || 'Speler'}</span><span class="remove-speler" onclick="removeSpeler(${s.id})">×</span>`;
+    container.appendChild(tab);
+  });
+}
+
+function switchSpeler(id) {
+  saveCurrentSpelerForm();
+  activeSpelerId = id;
+  renderSpelerTabs();
+  renderSpelerForm();
+}
+
+function removeSpeler(id) {
+  if (!confirm('Speler verwijderen?')) return;
+  spelersData = spelersData.filter(s => s.id !== id);
+  if (activeSpelerId === id) activeSpelerId = spelersData.length > 0 ? spelersData[spelersData.length - 1].id : null;
+  renderSpelerTabs();
+  if (activeSpelerId) renderSpelerForm();
+  else document.getElementById('speler-form-container').innerHTML = '<div style="padding:20px;color:var(--text-dim);">Geen spelers. Klik "+ Nieuwe speler" om te beginnen.</div>';
+}
+
+function saveCurrentSpelerForm() {
+  if (!activeSpelerId) return;
+  const s = spelersData.find(x => x.id === activeSpelerId);
+  if (!s) return;
+  const g = id => document.getElementById(id + '_' + activeSpelerId)?.value || '';
+  s.naam = g('s-naam') || 'Speler';
+  s.nr = g('s-nr');
+  s.positie = g('s-positie');
+  s.ploeg = g('s-ploeg');
+  s.geboortedatum = g('s-geboortedatum');
+  s.voet = g('s-voet');
+  s.wapen = g('s-wapen');
+  s.speelmin = g('s-min') || 90;
+  s.goals = g('s-goals') || 0;
+  s.assists = g('s-assists') || 0;
+  s.shots = g('s-shots') || 0;
+  s.obs_met = g('obs-met');
+  s.obs_zonder = g('obs-zonder');
+  s.obs_tact = g('obs-tact');
+  s.obs_fys = g('obs-fys');
+  s.s_sterk = g('s-sterk');
+  s.s_zwak = g('s-zwak');
+  s.advies = g('s-advies');
+  s.waarde = g('s-waarde');
+}
+
+function renderSpelerForm() {
+  const s = spelersData.find(x => x.id === activeSpelerId);
+  if (!s) return;
+  const sid = s.id;
+  const container = document.getElementById('speler-form-container');
+  container.innerHTML = `
+    <div class="section">
+      <div class="section-title">Spelersinfo</div>
+      <div class="grid-4">
+        <div><label>Naam</label><input type="text" id="s-naam_${sid}" value="${s.naam !== 'Nieuwe Speler' ? s.naam : ''}" placeholder="Volledige naam" oninput="onSpelerNaamChange(${sid})"></div>
+        <div><label>Rugnummer</label><input type="number" id="s-nr_${sid}" value="${s.nr}" placeholder="#"></div>
+        <div><label>Positie</label>
+          <select id="s-positie_${sid}">
+            ${['Aanvaller (CF)','Rechtsbuiten (RW)','Linksbuiten (LW)','Valse 9','Tweede spits','Aanvallende MV (10)','Centrale MV','Defensieve MV','Rechtsback','Linksback','Centrale verdediger','Keeper']
+              .map(p => `<option${p === s.positie ? ' selected' : ''}>${p}</option>`).join('')}
+          </select>
+        </div>
+        <div><label>Ploeg</label><input type="text" id="s-ploeg_${sid}" value="${s.ploeg}" placeholder="Clubnaam"></div>
+      </div>
+      <div class="grid-4" style="margin-top:10px;">
+        <div><label>Geboortedatum</label><input type="date" id="s-geboortedatum_${sid}" value="${s.geboortedatum}"></div>
+        <div><label>Beste voet</label>
+          <select id="s-voet_${sid}">
+            <option value="R"${s.voet==='R'?' selected':''}>Rechts (R)</option>
+            <option value="L"${s.voet==='L'?' selected':''}>Links (L)</option>
+            <option value="B"${s.voet==='B'?' selected':''}>Beide (B)</option>
+          </select>
+        </div>
+        <div style="grid-column:span 2;"><label>⚡ Wapen (beste voetbaleigenschap)</label><input type="text" id="s-wapen_${sid}" value="${s.wapen}" placeholder="b.v. Diepteloop, Afwerking, Voorzetten, Dribbelsnelheid..."></div>
+      </div>
+      <div class="grid-4" style="margin-top:10px;">
+        <div><label>Speeltijd (min)</label><input type="number" id="s-min_${sid}" value="${s.speelmin}" placeholder="90"></div>
+        <div><label>Doelpunten</label><input type="number" id="s-goals_${sid}" value="${s.goals}" min="0"></div>
+        <div><label>Assists</label><input type="number" id="s-assists_${sid}" value="${s.assists}" min="0"></div>
+        <div><label>Schoten op doel</label><input type="number" id="s-shots_${sid}" value="${s.shots}" min="0"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Kwaliteiten (1–10)</div>
+      <div class="grid-3" id="ratings-container_${sid}"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Radar Profiel</div>
+      <div class="radar-wrap"><canvas id="radarCanvas_${sid}" width="340" height="340"></canvas></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Observaties</div>
+      <div class="fase-grid">
+        <div class="fase-card"><div class="fase-name">🏃 Met de bal</div><textarea id="obs-met_${sid}" placeholder="Techniek, aanname, dribbel, passvermogen, schot...">${s.obs_met}</textarea></div>
+        <div class="fase-card"><div class="fase-name">🔍 Zonder de bal</div><textarea id="obs-zonder_${sid}" placeholder="Loopacties, vrijlopen, pressing, afdekken...">${s.obs_zonder}</textarea></div>
+        <div class="fase-card"><div class="fase-name">🧠 Tactisch</div><textarea id="obs-tact_${sid}" placeholder="Positionering, beslissingssnelheid, leiderschap...">${s.obs_tact}</textarea></div>
+        <div class="fase-card"><div class="fase-name">💪 Fysiek & Mentaal</div><textarea id="obs-fys_${sid}" placeholder="Snelheid, kracht, uithouding, veerkracht...">${s.obs_fys}</textarea></div>
+      </div>
+      <div class="divider"></div>
+      <div class="grid-2">
+        <div><label>Sterkste momenten</label><textarea id="s-sterk_${sid}" placeholder="2-3 concrete acties die imponeerden...">${s.s_sterk}</textarea></div>
+        <div><label>Aandachtspunten</label><textarea id="s-zwak_${sid}" placeholder="Momenten van twijfel, fouten...">${s.s_zwak}</textarea></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Eindbeoordeling</div>
+      <div class="grid-2">
+        <div>
+          <label>Eindscore</label>
+          <div id="final-stars_${sid}" class="stars" style="gap:6px;margin-bottom:8px;"></div>
+          <div class="overall-badge" id="overall-display_${sid}">${s.finalRating > 0 ? s.finalRating + '/10' : '–'}</div>
+        </div>
+        <div>
+          <label>Scout aanbeveling</label>
+          <select id="s-advies_${sid}">
+            <option value="">— Selecteer —</option>
+            ${['✅ Aanbevolen voor transfer','👀 Verder volgen','📋 Interessant komende zomer','⛔ Niet relevant','🔄 Herbekijken andere positie']
+              .map(a => `<option${a === s.advies ? ' selected' : ''}>${a}</option>`).join('')}
+          </select>
+          <div style="margin-top:8px;"><label>Transferwaarde</label><input type="text" id="s-waarde_${sid}" value="${s.waarde}" placeholder="b.v. €4M – €7M"></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Build ratings
+  const ratingsContainer = document.getElementById(`ratings-container_${sid}`);
+  attributes.forEach(attr => {
+    const wrap = document.createElement('div');
+    wrap.className = 'rating-group';
+    wrap.innerHTML = `<div class="rating-label">${attr.label}</div><div class="stars" id="stars-${attr.key}_${sid}"></div>`;
+    ratingsContainer.appendChild(wrap);
+    const starsDiv = wrap.querySelector('.stars');
+    for (let i = 1; i <= 10; i++) {
+      const star = document.createElement('div');
+      star.className = 'star' + (i <= s.ratings[attr.key] ? ' active' : '');
+      star.textContent = i;
+      star.addEventListener('click', () => {
+        s.ratings[attr.key] = i;
+        updateStars(`stars-${attr.key}_${sid}`, i);
+        drawRadar(sid);
+      });
+      starsDiv.appendChild(star);
+    }
+  });
+
+  // Final rating stars
+  const finalStarsDiv = document.getElementById(`final-stars_${sid}`);
   for (let i = 1; i <= 10; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    s.textContent = i;
-    s.style.width = '26px';
-    s.style.height = '26px';
-    s.style.fontSize = '11px';
-    s.addEventListener('click', () => {
-      ratings[attr.key] = i;
-      updateStars(attr.key, i);
-      drawRadar();
+    const star = document.createElement('div');
+    star.className = 'star' + (i <= s.finalRating ? ' active' : '');
+    star.textContent = i;
+    star.style.width = '32px'; star.style.height = '32px'; star.style.fontSize = '12px';
+    star.addEventListener('click', () => {
+      s.finalRating = i;
+      document.querySelectorAll(`#final-stars_${sid} .star`).forEach((st, idx) => st.classList.toggle('active', idx < i));
+      document.getElementById(`overall-display_${sid}`).textContent = i + '/10';
     });
-    starsDiv.appendChild(s);
+    finalStarsDiv.appendChild(star);
   }
-});
 
-function updateStars(key, val) {
-  const stars = document.querySelectorAll(`#stars-${key} .star`);
-  stars.forEach((s, i) => {
-    s.classList.toggle('active', i < val);
-  });
+  drawRadar(sid);
 }
 
-// =================== FINAL RATING ===================
-let finalRating = 0;
-const finalStarsDiv = document.getElementById('final-stars');
-for (let i = 1; i <= 10; i++) {
-  const s = document.createElement('div');
-  s.className = 'star';
-  s.textContent = i;
-  s.style.width = '34px'; s.style.height = '34px'; s.style.fontSize = '13px';
-  s.addEventListener('click', () => {
-    finalRating = i;
-    document.querySelectorAll('#final-stars .star').forEach((st, idx) => {
-      st.classList.toggle('active', idx < i);
-    });
-    document.getElementById('overall-display').textContent = i + '/10';
-  });
-  finalStarsDiv.appendChild(s);
+function onSpelerNaamChange(sid) {
+  const naam = document.getElementById(`s-naam_${sid}`).value;
+  const s = spelersData.find(x => x.id === sid);
+  if (s) { s.naam = naam || 'Speler'; renderSpelerTabs(); }
 }
 
-// =================== RADAR CHART ===================
-function drawRadar() {
-  const canvas = document.getElementById('radarCanvas');
+function updateStars(containerId, val) {
+  const stars = document.querySelectorAll(`#${containerId} .star`);
+  stars.forEach((s, i) => s.classList.toggle('active', i < val));
+}
+
+function drawRadar(sid) {
+  const canvas = document.getElementById(`radarCanvas_${sid}`);
+  if (!canvas) return;
+  const s = spelersData.find(x => x.id === sid);
+  if (!s) return;
   const ctx = canvas.getContext('2d');
-  const cx = 180, cy = 180, r = 140;
+  const cx = 170, cy = 170, r = 130;
   const keys = ['snelheid','techniek','passing','schot','dribbel','positionering','pressing','beslissingen','kracht','uithoudingsvermogen'];
   const labels = ['Snelheid','Techniek','Passing','Schot','Dribbel','Positie','Pressing','Beslissing','Kracht','Uithouding'];
   const n = keys.length;
-
-  ctx.clearRect(0,0,360,360);
-
-  // BG
+  ctx.clearRect(0, 0, 340, 340);
   ctx.fillStyle = '#111418';
-  ctx.fillRect(0,0,360,360);
-
-  // Grid
+  ctx.fillRect(0, 0, 340, 340);
   for (let g = 1; g <= 5; g++) {
     ctx.beginPath();
     for (let i = 0; i < n; i++) {
       const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
       const pr = (g / 5) * r;
-      const x = cx + pr * Math.cos(angle);
-      const y = cy + pr * Math.sin(angle);
-      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      i === 0 ? ctx.moveTo(cx + pr * Math.cos(angle), cy + pr * Math.sin(angle)) : ctx.lineTo(cx + pr * Math.cos(angle), cy + pr * Math.sin(angle));
     }
-    ctx.closePath();
-    ctx.strokeStyle = '#2a3040';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.closePath(); ctx.strokeStyle = '#2a3040'; ctx.lineWidth = 1; ctx.stroke();
   }
-
-  // Axes
   for (let i = 0; i < n; i++) {
     const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
-    ctx.strokeStyle = '#2a3040';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + r * Math.cos(angle), cy + r * Math.sin(angle));
+    ctx.strokeStyle = '#2a3040'; ctx.lineWidth = 1; ctx.stroke();
   }
-
-  // Data polygon
-  const vals = keys.map(k => (ratings[k] || 0) / 10);
+  const vals = keys.map(k => (s.ratings[k] || 0) / 10);
   ctx.beginPath();
   for (let i = 0; i < n; i++) {
     const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
     const pr = vals[i] * r;
-    const x = cx + pr * Math.cos(angle);
-    const y = cy + pr * Math.sin(angle);
-    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    i === 0 ? ctx.moveTo(cx + pr * Math.cos(angle), cy + pr * Math.sin(angle)) : ctx.lineTo(cx + pr * Math.cos(angle), cy + pr * Math.sin(angle));
   }
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(0,200,83,0.18)';
-  ctx.fill();
-  ctx.strokeStyle = '#00C853';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-
-  // Dots
+  ctx.closePath(); ctx.fillStyle = 'rgba(0,200,83,0.18)'; ctx.fill();
+  ctx.strokeStyle = '#00C853'; ctx.lineWidth = 2.5; ctx.stroke();
   for (let i = 0; i < n; i++) {
     const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
     const pr = vals[i] * r;
-    ctx.beginPath();
-    ctx.arc(cx + pr * Math.cos(angle), cy + pr * Math.sin(angle), 4, 0, Math.PI*2);
-    ctx.fillStyle = '#00C853';
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + pr * Math.cos(angle), cy + pr * Math.sin(angle), 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#00C853'; ctx.fill();
   }
-
-  // Labels
-  ctx.font = 'bold 11px DM Sans, sans-serif';
-  ctx.fillStyle = '#7a8799';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 10px DM Sans, sans-serif'; ctx.fillStyle = '#7a8799'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   for (let i = 0; i < n; i++) {
     const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
-    const lr = r + 22;
-    const x = cx + lr * Math.cos(angle);
-    const y = cy + lr * Math.sin(angle);
-    ctx.fillText(labels[i], x, y);
+    const lr = r + 20;
+    ctx.fillText(labels[i], cx + lr * Math.cos(angle), cy + lr * Math.sin(angle));
   }
-
-  // Center name
-  const naam = document.getElementById('s-naam').value || '—';
-  ctx.font = 'bold 14px Space Mono, monospace';
-  ctx.fillStyle = '#e8edf5';
-  ctx.fillText(naam, cx, cy - 10);
-  ctx.font = '11px DM Sans, sans-serif';
-  ctx.fillStyle = '#00C853';
-  ctx.fillText(document.getElementById('s-positie').value.split(' ')[0] || '', cx, cy + 10);
+  ctx.font = 'bold 13px Space Mono, monospace'; ctx.fillStyle = '#e8edf5';
+  ctx.fillText(s.naam !== 'Nieuwe Speler' ? s.naam : '—', cx, cy - 9);
+  ctx.font = '10px DM Sans, sans-serif'; ctx.fillStyle = '#00C853';
+  ctx.fillText(s.positie ? s.positie.split(' ')[0] : '', cx, cy + 9);
 }
-
-document.getElementById('s-naam').addEventListener('input', drawRadar);
-document.getElementById('s-positie').addEventListener('change', drawRadar);
 
 // =================== NOTION EXPORT ===================
 function generateNotion() {
+  saveCurrentSpelerForm();
   const get = id => document.getElementById(id)?.value || '';
   const thuis = get('thuis') || 'Thuisploeg';
   const uit = get('uit') || 'Uitploeg';
-  const datum = get('datum') || 'Datum';
-  const comp = get('competitie') || 'Competitie';
-  const ronde = get('ronde') || '—';
-  const stadion = get('stadion') || '—';
-  const sThuis = get('score-thuis');
-  const sUit = get('score-uit');
-  const formT = get('form-thuis');
-  const formU = get('form-uit');
-  const naam = get('s-naam') || 'Gescoute Speler';
-  const nr = get('s-nr') || '?';
-  const pos = get('s-positie') || '—';
-  const ploeg = get('s-ploeg') || thuis;
-  const speelmin = get('s-min') || '90';
-  const goals = get('s-goals') || '0';
-  const assists = get('s-assists') || '0';
-  const shots = get('s-shots') || '0';
-  const advies = get('s-advies') || '—';
-  const waarde = get('s-waarde') || '—';
-
-  const evLines = events.map(e => `  ${String(e.min).padStart(3, ' ')}'  ${e.type}  ${e.desc}`).join('\n') || '  —';
-
+  const evLines = events.map(e => `  ${String(e.min).padStart(3,' ')}'  ${e.type}  ${e.desc}`).join('\n') || '  —';
   const chipSterk = [...document.querySelectorAll('#chips-sterk .chip.on')].map(c => c.textContent).join(', ') || '—';
   const chipZwak = [...document.querySelectorAll('#chips-zwak .chip.bad')].map(c => c.textContent).join(', ') || '—';
 
-  const ratingsLines = attributes.map(a => `  ${a.label.padEnd(22)} ${'█'.repeat(ratings[a.key] || 0)}${'░'.repeat(10-(ratings[a.key]||0))}  ${ratings[a.key] || 0}/10`).join('\n');
+  // Players on pitch
+  const pitchLines = players.map(p => `  [${p.team.toUpperCase()}] #${p.nr} ${p.naam} | ${p.positie} | ${p.jaar} | Voet: ${p.voet}`).join('\n') || '  —';
 
-  const output = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  WEDSTRIJD ANALYSERAPPORT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  ${thuis.toUpperCase()}  ${sThuis} – ${sUit}  ${uit.toUpperCase()}
-  ${comp} | ${ronde} | ${stadion} | ${datum}
-  Formaties: ${thuis} (${formT}) vs ${uit} (${formU})
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  EVENEMENTENLOG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-${evLines}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  WEDSTRIJDFASEN
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  🏗 OPBOUWSPEL
-  ${get('fase-opbouw') || '—'}
-
-  ⚡ OMSCHAKELING
-  ${get('fase-omschak') || '—'}
-
-  🔒 VERDEDIGING
-  ${get('fase-verd') || '—'}
-
-  📐 STANDAARDSITUATIES
-  ${get('fase-std') || '—'}
-
-  STERKTES:  ${chipSterk}
-  ZWAKTES:   ${chipZwak}
-
-  ALGEMENE INDRUK
-  ${get('wedstrijd-indruk') || '—'}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  SPELERSANALYSE  ·  #${nr} ${naam.toUpperCase()}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  Positie:    ${pos}
-  Ploeg:      ${ploeg}
-  Speeltijd:  ${speelmin}'
-
-  Goals: ${goals}  |  Assists: ${assists}  |  Schoten: ${shots}
+  // Player assessments
+  const spelersLines = spelersData.map(s => {
+    const attrLines = attributes.map(a => `    ${a.label.padEnd(22)} ${'█'.repeat(s.ratings[a.key]||0)}${'░'.repeat(10-(s.ratings[a.key]||0))}  ${s.ratings[a.key]||0}/10`).join('\n');
+    return `
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SPELER: #${s.nr} ${s.naam.toUpperCase()}
+  Positie: ${s.positie} | Ploeg: ${s.ploeg}
+  Geboortedatum: ${s.geboortedatum || '—'} | Voet: ${s.voet} | ⚡ Wapen: ${s.wapen || '—'}
+  Speeltijd: ${s.speelmin}' | Goals: ${s.goals} | Assists: ${s.assists} | Schoten: ${s.shots}
 
   KWALITEITEN
-${ratingsLines}
+${attrLines}
 
-  Eindscore:  ${finalRating}/10
+  Eindscore: ${s.finalRating}/10
 
-  MET DE BAL
-  ${get('obs-met') || '—'}
+  MET DE BAL:    ${s.obs_met || '—'}
+  ZONDER DE BAL: ${s.obs_zonder || '—'}
+  TACTISCH:      ${s.obs_tact || '—'}
+  FYSIEK:        ${s.obs_fys || '—'}
 
-  ZONDER DE BAL
-  ${get('obs-zonder') || '—'}
+  STERKSTE MOMENTEN: ${s.s_sterk || '—'}
+  AANDACHTSPUNTEN:   ${s.s_zwak || '—'}
 
-  TACTISCH
-  ${get('obs-tact') || '—'}
+  AANBEVELING:  ${s.advies || '—'}
+  WAARDE:       ${s.waarde || '—'}`;
+  }).join('\n');
 
-  FYSIEK & MENTAAL
-  ${get('obs-fys') || '—'}
+  const output = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  WEDSTRIJD ANALYSERAPPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ${thuis.toUpperCase()}  ${get('score-thuis')} – ${get('score-uit')}  ${uit.toUpperCase()}
+  ${get('competitie')||'—'} | ${get('ronde')||'—'} | ${get('stadion')||'—'} | ${get('datum')||'—'}
+  Formaties: ${thuis} (${get('form-thuis')}) vs ${uit} (${get('form-uit')})
 
-  STERKSTE MOMENTEN
-  ${get('s-sterk') || '—'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  OPSTELLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${pitchLines}
 
-  AANDACHTSPUNTEN
-  ${get('s-zwak') || '—'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  EVENEMENTENLOG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${evLines}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  EINDBEOORDELING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  WEDSTRIJDFASEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  OPBOUWSPEL:       ${get('fase-opbouw')||'—'}
+  OMSCHAKELING:     ${get('fase-omschak')||'—'}
+  VERDEDIGING:      ${get('fase-verd')||'—'}
+  STANDAARDSIT.:    ${get('fase-std')||'—'}
 
-  Aanbeveling:        ${advies}
-  Transferwaarde:     ${waarde}
+  STERKTES: ${chipSterk}
+  ZWAKTES:  ${chipZwak}
+  INDRUK:   ${get('wedstrijd-indruk')||'—'}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SPELERSANALYSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${spelersLines || '  Geen spelers beoordeeld.'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `.trim();
 
   document.getElementById('notion-output').textContent = output;
@@ -1119,7 +1237,8 @@ function copyNotion() {
 }
 
 // =================== INIT ===================
-drawRadar();
+// Start with empty speler prompt
+document.getElementById('speler-form-container').innerHTML = '<div style="padding:20px;color:var(--text-dim);font-size:13px;">Klik "+ Nieuwe speler" om een spelersbeoordeling te starten.</div>';
 </script>
 </body>
 </html>
