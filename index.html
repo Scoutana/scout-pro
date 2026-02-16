@@ -208,6 +208,24 @@
   @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
   /* SPELER DETAIL MODAL */
+  .modal-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+  .modal-tab { background: var(--surface3); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.15s; }
+  .modal-tab.active { background: var(--groen); border-color: var(--groen); color: #000; font-weight: 700; }
+  .modal-tab-content { display: none; }
+  .modal-tab-content.active { display: block; }
+  .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
+  .doc-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .doc-card:hover { border-color: var(--accent); }
+  .doc-icon { font-size: 28px; margin-bottom: 6px; }
+  .doc-name { font-size: 11px; color: var(--text-dim); word-break: break-all; }
+  .doc-upload-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+  .doc-upload-zone:hover { border-color: var(--groen); background: var(--surface2); }
+  .edit-field { width: 100%; background: var(--surface3); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 7px 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; margin-top: 4px; outline: none; }
+  .edit-field:focus { border-color: var(--groen); }
+  .edit-textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+  .save-inline-btn { background: var(--groen); border: none; color: #000; padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; margin-top: 8px; }
+  .speler-foto-modal { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 12px; }
+  .radar-modal-wrap { display: flex; justify-content: center; padding: 10px 0; }
   .speler-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 300; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 20px; }
   .speler-modal-overlay.open { display: flex; }
   .speler-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 800px; margin: auto; overflow: hidden; }
@@ -724,6 +742,20 @@
   </div>
 </div>
 
+<!-- WEDSTRIJD DETAIL MODAL -->
+<div class="speler-modal-overlay" id="wedstrijdDetailModal">
+  <div class="speler-modal">
+    <div class="speler-modal-header">
+      <div>
+        <div class="speler-modal-naam" id="wd-modal-naam">–</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:4px;" id="wd-modal-info">–</div>
+      </div>
+      <button class="speler-modal-close" onclick="document.getElementById('wedstrijdDetailModal').classList.remove('open')">×</button>
+    </div>
+    <div class="speler-modal-body" id="wd-modal-body"></div>
+  </div>
+</div>
+
 <!-- ====================== EXPORT ====================== -->
 <div id="panel-export" class="panel">
   <div class="section">
@@ -1029,17 +1061,26 @@ async function dbDeleteAllRapporten(idsStr, naam) {
   } catch(e) { alert('Fout: ' + e.message); }
 }
 
+let currentModalIds = [];
+let currentModalDocs = {};
+
 function openSpelerModal(idsStr) {
-  const ids = idsStr.split(',').map(i => i.trim());
-  const rapporten = dbSpelersCache.filter(s => ids.includes(s.id));
+  currentModalIds = idsStr.split(',').map(i => i.trim());
+  const rapporten = dbSpelersCache.filter(s => currentModalIds.includes(s.id));
   if (!rapporten.length) return;
   rapporten.sort((a,b) => (a.aangemaakt_op||'').localeCompare(b.aangemaakt_op||''));
   const eerste = rapporten[0];
   const laatste = rapporten[rapporten.length-1];
-  document.getElementById('modal-speler-naam').textContent = eerste.naam || '–';
-  document.getElementById('modal-speler-info').textContent =
-    `${eerste.positie || '–'} · ${eerste.ploeg || '–'} · Voet: ${eerste.voet || '–'} · ${rapporten.length} rapport(en)`;
 
+  document.getElementById('modal-speler-naam').textContent = eerste.naam || '–';
+  const geb = eerste.geboortedatum ? ` · 🎂 ${eerste.geboortedatum}` : '';
+  const wapen = laatste.wapen ? ` · ⚡ ${laatste.wapen}` : '';
+  document.getElementById('modal-speler-info').textContent =
+    `${eerste.positie||'–'} · ${eerste.ploeg||'–'} · Voet: ${eerste.voet||'–'}${geb}${wapen} · ${rapporten.length} rapport(en)`;
+
+  const attrKeys = ['aanpassingsvermogen','coordinatie','creativiteit','fysiek','motoriek',
+    'mentale_weerbaarheid','positiespel','professionele_houding','scanning',
+    'spelintelligentie','stabiliteit','techniek_druk','werkethiek','winnaarmentaliteit'];
   const attrLabels = {
     aanpassingsvermogen:'Aanpassingsvermogen', coordinatie:'Coördinatie', creativiteit:'Creativiteit',
     fysiek:'Fysiek', motoriek:'Motoriek', mentale_weerbaarheid:'Mentale weerbaarheid',
@@ -1048,64 +1089,331 @@ function openSpelerModal(idsStr) {
     werkethiek:'Werkethiek', winnaarmentaliteit:'Winnaarmentaliteit'
   };
 
-  // Evolutie sectie
+  // --- TAB: OVERZICHT ---
+  const fotoHTML = laatste.foto ? `<img src="${laatste.foto}" class="speler-foto-modal">` : '';
+  const infoHTML = `
+    ${fotoHTML}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Naam</label>
+        <input class="edit-field" value="${laatste.naam||''}" onchange="updateSpelerField(currentModalIds,'naam',this.value)"></div>
+      <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Rugnummer</label>
+        <input class="edit-field" value="${laatste.rugnummer||''}" onchange="updateSpelerField(currentModalIds,'rugnummer',this.value)"></div>
+      <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Positie</label>
+        <input class="edit-field" value="${laatste.positie||''}" onchange="updateSpelerField(currentModalIds,'positie',this.value)"></div>
+      <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Ploeg</label>
+        <input class="edit-field" value="${laatste.ploeg||''}" onchange="updateSpelerField(currentModalIds,'ploeg',this.value)"></div>
+      <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Geboortedatum</label>
+        <input class="edit-field" type="date" value="${laatste.geboortedatum||''}" onchange="updateSpelerField(currentModalIds,'geboortedatum',this.value)"></div>
+      <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Beste voet</label>
+        <select class="edit-field" onchange="updateSpelerField(currentModalIds,'voet',this.value)">
+          <option${laatste.voet==='R'?' selected':''}>R</option>
+          <option${laatste.voet==='L'?' selected':''}>L</option>
+          <option${laatste.voet==='B'?' selected':''}>B</option>
+        </select></div>
+      <div style="grid-column:span 2"><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">⚡ Wapen</label>
+        <input class="edit-field" value="${laatste.wapen||''}" placeholder="Beste voetbaleigenschap..." onchange="updateSpelerField(currentModalIds,'wapen',this.value)"></div>
+      <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Aanbeveling</label>
+        <select class="edit-field" onchange="updateSpelerField(currentModalIds,'advies',this.value)">
+          <option value="">— Selecteer —</option>
+          ${['✅ Aanbevolen voor transfer','👀 Verder volgen','📋 Interessant komende zomer','⛔ Niet relevant','🔄 Herbekijken andere positie'].map(a=>`<option${laatste.advies===a?' selected':''}>${a}</option>`).join('')}
+        </select></div>
+      <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Transferwaarde</label>
+        <input class="edit-field" value="${laatste.waarde||''}" placeholder="€ ..." onchange="updateSpelerField(currentModalIds,'waarde',this.value)"></div>
+    </div>
+    <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Sterke punten</label>
+      <textarea class="edit-field edit-textarea" onchange="updateSpelerField(currentModalIds,'sterke_punten',this.value)">${laatste.sterke_punten||''}</textarea></div>
+    <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Zwakke punten</label>
+      <textarea class="edit-field edit-textarea" onchange="updateSpelerField(currentModalIds,'zwakke_punten',this.value)">${laatste.zwakke_punten||''}</textarea></div>
+    <div style="font-size:11px;color:var(--groen);margin-top:4px;">✓ Wijzigingen worden automatisch opgeslagen</div>`;
+
+  // --- TAB: BEOORDELINGEN + RADAR ---
+  const avg = calcRatingsAvg(laatste.ratings);
+  const ratingsHTML = attrKeys.map(key => {
+    const val = (laatste.ratings && laatste.ratings[key]) || 0;
+    return `<div class="rapport-rating-row" style="margin-bottom:6px;">
+      <span style="color:var(--text-dim);min-width:160px;">${attrLabels[key]}</span>
+      <div class="rating-bar" style="flex:1;"><div class="rating-bar-fill" style="width:${val*10}%"></div></div>
+      <span class="rapport-rating-val" style="min-width:32px;text-align:right;">${val}/10</span>
+    </div>`;
+  }).join('');
+
+  const beoordelingHTML = `
+    <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+      <div class="avg-badge"><div><div class="avg-num">${avg > 0 ? avg : '–'}</div><div class="avg-label">gemiddelde</div></div></div>
+      <div style="font-size:13px;color:var(--text-dim);">Laatste rapport · ${rapporten.length} observatie(s)</div>
+    </div>
+    <div class="radar-modal-wrap"><canvas id="modal-radar-canvas" width="360" height="360"></canvas></div>
+    <div class="divider" style="margin:14px 0;"></div>
+    <div>${ratingsHTML}</div>
+    <div class="divider" style="margin:14px 0;"></div>
+    <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Met de bal</label>
+      <textarea class="edit-field edit-textarea" onchange="updateSpelerField(currentModalIds,'obs_met',this.value)">${laatste.obs_met||''}</textarea></div>
+    <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Zonder de bal</label>
+      <textarea class="edit-field edit-textarea" onchange="updateSpelerField(currentModalIds,'obs_zonder',this.value)">${laatste.obs_zonder||''}</textarea></div>
+    <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Tactisch</label>
+      <textarea class="edit-field edit-textarea" onchange="updateSpelerField(currentModalIds,'obs_tact',this.value)">${laatste.obs_tact||''}</textarea></div>
+    <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Fysiek & Mentaal</label>
+      <textarea class="edit-field edit-textarea" onchange="updateSpelerField(currentModalIds,'obs_fys',this.value)">${laatste.obs_fys||''}</textarea></div>`;
+
+  // --- TAB: EVOLUTIE ---
   let evolutieHTML = '';
   if (rapporten.length > 1) {
     evolutieHTML = `<div class="evolutie-wrap">
-      <div class="evolutie-title">📈 Evolutie: eerste vs laatste rapport</div>`;
-    Object.entries(attrLabels).forEach(([key, label]) => {
+      <div class="evolutie-title">📈 Evolutie per criterium — eerste vs laatste rapport</div>`;
+    attrKeys.forEach(key => {
       const v1 = (eerste.ratings && eerste.ratings[key]) || 0;
       const v2 = (laatste.ratings && laatste.ratings[key]) || 0;
       const diff = v2 - v1;
       const kleur = diff > 0 ? 'var(--groen)' : diff < 0 ? 'var(--rood)' : 'var(--text-dim)';
       const pijl = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
       evolutieHTML += `<div class="evolutie-row">
-        <span class="evolutie-label">${label}</span>
+        <span class="evolutie-label">${attrLabels[key]}</span>
         <span class="evolutie-first">${v1}/10</span>
-        <span class="evolutie-arrow" style="color:${kleur}">${pijl}</span>
-        <span class="evolutie-last">${v2}/10</span>
+        <span class="evolutie-arrow" style="color:${kleur};font-size:16px;">${pijl}</span>
+        <span class="evolutie-last" style="color:${kleur}">${v2}/10</span>
         <div style="flex:1;margin-left:10px;">
           <div class="rating-bar"><div class="rating-bar-fill" style="width:${v2*10}%;background:${kleur}"></div></div>
         </div>
+        ${diff !== 0 ? `<span style="font-family:'Space Mono',monospace;font-size:11px;color:${kleur};min-width:32px;text-align:right;">${diff>0?'+':''}${diff}</span>` : ''}
       </div>`;
     });
-    evolutieHTML += '</div><div class="divider" style="margin:16px 0;"></div>';
+    evolutieHTML += '</div>';
+  } else {
+    evolutieHTML = '<div style="color:var(--text-dim);padding:20px;text-align:center;">Voeg een 2e rapport toe om de evolutie te zien.</div>';
   }
 
-  // Rapporten sectie
-  const rapportenHTML = rapporten.map((r, i) => {
+  // --- TAB: RAPPORTEN HISTORIEK ---
+  const historiekHTML = rapporten.map((r, i) => {
     const datum = r.aangemaakt_op ? new Date(r.aangemaakt_op).toLocaleDateString('nl-BE') : '–';
-    const avg = calcRatingsAvg(r.ratings);
-    const ratingsHTML = Object.entries(attrLabels).map(([key, label]) => {
-      const val = (r.ratings && r.ratings[key]) || 0;
-      return `<div class="rapport-rating-row">
-        <span style="color:var(--text-dim)">${label}</span>
-        <div class="rating-bar"><div class="rating-bar-fill" style="width:${val*10}%"></div></div>
-        <span class="rapport-rating-val">${val}</span>
-      </div>`;
-    }).join('');
+    const ravg = calcRatingsAvg(r.ratings);
     return `<div class="rapport-card">
       <div class="rapport-card-header">
         <div>
           <div class="rapport-datum">Rapport ${i+1} — ${datum}</div>
-          ${r.advies ? `<div style="font-size:12px;margin-top:4px;">${r.advies}</div>` : ''}
+          ${r.advies ? `<div style="font-size:12px;color:var(--text-dim);margin-top:3px;">${r.advies}</div>` : ''}
+          ${r.wapen ? `<div style="font-size:12px;margin-top:3px;">⚡ ${r.wapen}</div>` : ''}
         </div>
-        <div class="rapport-score">${r.final_rating > 0 ? r.final_rating+'/10' : avg > 0 ? avg+'/10' : '–'}</div>
+        <div class="rapport-score">${r.final_rating > 0 ? r.final_rating+'/10' : ravg > 0 ? ravg+'/10' : '–'}</div>
       </div>
-      ${r.wapen ? `<div style="margin-bottom:10px;font-size:12px;"><span style="color:var(--text-dim)">⚡ Wapen:</span> ${r.wapen}</div>` : ''}
-      <div class="rapport-ratings">${ratingsHTML}</div>
-      ${r.sterke_punten ? `<div style="margin-top:10px;font-size:12px;"><span style="color:var(--groen);font-weight:700;">+ Sterk:</span> ${r.sterke_punten}</div>` : ''}
-      ${r.zwakke_punten ? `<div style="font-size:12px;"><span style="color:var(--rood);font-weight:700;">- Zwak:</span> ${r.zwakke_punten}</div>` : ''}
-      ${r.obs_tact ? `<div style="font-size:12px;color:var(--text-dim);margin-top:6px;">${r.obs_tact}</div>` : ''}
+      ${r.sterke_punten ? `<div style="font-size:12px;margin-bottom:4px;"><span style="color:var(--groen);font-weight:700;">+ Sterk:</span> ${r.sterke_punten}</div>` : ''}
+      ${r.zwakke_punten ? `<div style="font-size:12px;margin-bottom:4px;"><span style="color:var(--rood);font-weight:700;">- Zwak:</span> ${r.zwakke_punten}</div>` : ''}
+      ${r.obs_met ? `<div style="font-size:12px;margin-bottom:4px;"><span style="color:var(--accent);">Met de bal:</span> ${r.obs_met}</div>` : ''}
+      ${r.obs_zonder ? `<div style="font-size:12px;margin-bottom:4px;"><span style="color:var(--accent);">Zonder de bal:</span> ${r.obs_zonder}</div>` : ''}
+      ${r.obs_tact ? `<div style="font-size:12px;margin-bottom:4px;"><span style="color:var(--accent);">Tactisch:</span> ${r.obs_tact}</div>` : ''}
+      ${r.obs_fys ? `<div style="font-size:12px;"><span style="color:var(--accent);">Fysiek:</span> ${r.obs_fys}</div>` : ''}
     </div>`;
   }).reverse().join('');
 
-  document.getElementById('modal-speler-body').innerHTML = evolutieHTML + rapportenHTML;
+  // --- TAB: DOCUMENTEN ---
+  const docs = currentModalDocs[currentModalIds[0]] || [];
+  const docsHTML = buildDocsHTML(docs, currentModalIds[0]);
+
+  // Build full modal with tabs
+  document.getElementById('modal-speler-body').innerHTML = `
+    <div class="modal-tabs">
+      <div class="modal-tab active" onclick="switchModalTab(this,'tab-info')">👤 Profiel</div>
+      <div class="modal-tab" onclick="switchModalTab(this,'tab-beoord')">📊 Beoordeling</div>
+      <div class="modal-tab" onclick="switchModalTab(this,'tab-evol')">📈 Evolutie</div>
+      <div class="modal-tab" onclick="switchModalTab(this,'tab-hist')">📋 Historiek</div>
+      <div class="modal-tab" onclick="switchModalTab(this,'tab-docs')">📎 Documenten</div>
+    </div>
+    <div class="modal-tab-content active" id="tab-info">${infoHTML}</div>
+    <div class="modal-tab-content" id="tab-beoord">${beoordelingHTML}</div>
+    <div class="modal-tab-content" id="tab-evol">${evolutieHTML}</div>
+    <div class="modal-tab-content" id="tab-hist">${historiekHTML}</div>
+    <div class="modal-tab-content" id="tab-docs">${docsHTML}</div>
+  `;
   document.getElementById('spelerDetailModal').classList.add('open');
+
+  // Draw radar after DOM update
+  setTimeout(() => drawModalRadar(laatste.ratings, attrKeys, Object.values(attrLabels)), 100);
+}
+
+function switchModalTab(el, tabId) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.modal-tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+function drawModalRadar(ratings, keys, labels) {
+  const canvas = document.getElementById('modal-radar-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx = 180, cy = 180, r = 130;
+  const n = keys.length;
+  ctx.clearRect(0,0,360,360);
+  ctx.fillStyle = '#111418'; ctx.fillRect(0,0,360,360);
+  for (let g = 1; g <= 5; g++) {
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const angle = (Math.PI*2*i/n) - Math.PI/2;
+      const pr = (g/5)*r;
+      i===0 ? ctx.moveTo(cx+pr*Math.cos(angle),cy+pr*Math.sin(angle)) : ctx.lineTo(cx+pr*Math.cos(angle),cy+pr*Math.sin(angle));
+    }
+    ctx.closePath(); ctx.strokeStyle='#2a3040'; ctx.lineWidth=1; ctx.stroke();
+  }
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI*2*i/n) - Math.PI/2;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+r*Math.cos(angle),cy+r*Math.sin(angle));
+    ctx.strokeStyle='#2a3040'; ctx.lineWidth=1; ctx.stroke();
+  }
+  const vals = keys.map(k => ((ratings&&ratings[k])||0)/10);
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI*2*i/n) - Math.PI/2;
+    const pr = vals[i]*r;
+    i===0 ? ctx.moveTo(cx+pr*Math.cos(angle),cy+pr*Math.sin(angle)) : ctx.lineTo(cx+pr*Math.cos(angle),cy+pr*Math.sin(angle));
+  }
+  ctx.closePath(); ctx.fillStyle='rgba(0,200,83,0.2)'; ctx.fill();
+  ctx.strokeStyle='#00C853'; ctx.lineWidth=2.5; ctx.stroke();
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI*2*i/n) - Math.PI/2;
+    const pr = vals[i]*r;
+    ctx.beginPath(); ctx.arc(cx+pr*Math.cos(angle),cy+pr*Math.sin(angle),4,0,Math.PI*2);
+    ctx.fillStyle='#00C853'; ctx.fill();
+  }
+  ctx.font='bold 10px DM Sans,sans-serif'; ctx.fillStyle='#7a8799'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI*2*i/n) - Math.PI/2;
+    const lr = r+22;
+    ctx.fillText(labels[i], cx+lr*Math.cos(angle), cy+lr*Math.sin(angle));
+  }
+}
+
+function buildDocsHTML(docs, spelerDbId) {
+  const docsItems = docs.length > 0 ? docs.map((d,i) => `
+    <div class="doc-card" onclick="openDoc('${i}','${spelerDbId}')">
+      <div class="doc-icon">${d.type==='pdf'?'📄':d.type==='word'?'📝':d.type==='img'?'🖼️':'📎'}</div>
+      <div class="doc-name">${d.naam}</div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">${d.datum||''}</div>
+    </div>`).join('') : '<div style="color:var(--text-dim);font-size:13px;padding:10px;">Nog geen documenten toegevoegd.</div>';
+  return `
+    <div class="doc-upload-zone" onclick="document.getElementById('doc-upload-input').click()">
+      <input type="file" id="doc-upload-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" style="display:none" onchange="uploadDoc(event,'${spelerDbId}')">
+      <div style="font-size:28px;margin-bottom:6px;">📎</div>
+      <div style="font-weight:600;font-size:13px;">Klik om document toe te voegen</div>
+      <div style="color:var(--text-dim);font-size:11px;margin-top:4px;">PDF, Word, JPG, PNG</div>
+    </div>
+    <div class="doc-grid" id="doc-grid-${spelerDbId}">${docsItems}</div>`;
+}
+
+function uploadDoc(event, spelerDbId) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (!currentModalDocs[spelerDbId]) currentModalDocs[spelerDbId] = [];
+    const ext = file.name.split('.').pop().toLowerCase();
+    const type = ['jpg','jpeg','png','gif'].includes(ext) ? 'img' : ext === 'pdf' ? 'pdf' : ['doc','docx'].includes(ext) ? 'word' : 'file';
+    currentModalDocs[spelerDbId].push({
+      naam: file.name,
+      data: e.target.result,
+      type,
+      datum: new Date().toLocaleDateString('nl-BE')
+    });
+    const grid = document.getElementById('doc-grid-' + spelerDbId);
+    if (grid) grid.outerHTML = buildDocsHTML(currentModalDocs[spelerDbId], spelerDbId).split('doc-grid')[1];
+    document.getElementById('tab-docs').innerHTML = buildDocsHTML(currentModalDocs[spelerDbId], spelerDbId);
+    event.target.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function openDoc(idx, spelerDbId) {
+  const doc = (currentModalDocs[spelerDbId] || [])[idx];
+  if (!doc) return;
+  const win = window.open();
+  if (doc.type === 'img') {
+    win.document.write(`<img src="${doc.data}" style="max-width:100%">`);
+  } else {
+    win.location = doc.data;
+  }
+}
+
+async function updateSpelerField(ids, field, value) {
+  try {
+    for (const id of ids) {
+      await sb.from('spelers').update({ [field]: value, bijgewerkt_op: new Date().toISOString() }).eq('id', id.trim());
+    }
+    setDBStatus('online', 'opgeslagen ✓');
+    setTimeout(() => setDBStatus('online', 'verbonden'), 2000);
+    // update cache
+    dbSpelersCache.forEach(s => {
+      if (ids.includes(s.id)) s[field] = value;
+    });
+  } catch(e) { setDBStatus('error', 'fout!'); }
+}
+
+function openWedstrijdModal(w) {
+  document.getElementById('wd-modal-naam').textContent = `${w.thuis||'–'} ${w.score_thuis??0} – ${w.score_uit??0} ${w.uit||'–'}`;
+  document.getElementById('wd-modal-info').textContent = `${w.competitie||'–'} · ${w.ronde||''} · ${w.stadion||''} · ${w.datum||''}`;
+
+  const eventsHTML = w.events && w.events.length > 0 ? w.events.map(e =>
+    `<div class="event-item"><span class="event-min">${e.min}'</span><span class="event-type">${e.type}</span><span class="event-desc">${e.desc}</span></div>`
+  ).join('') : '<div style="color:var(--text-dim);font-size:13px;">Geen events geregistreerd.</div>';
+
+  const faseHTML = `
+    <div class="fase-grid">
+      <div class="fase-card"><div class="fase-name">🏗 Opbouwspel</div><div style="font-size:13px;color:var(--text-dim);">${w.fase_opbouw||'–'}</div></div>
+      <div class="fase-card"><div class="fase-name">⚡ Omschakeling</div><div style="font-size:13px;color:var(--text-dim);">${w.fase_omschakeling||'–'}</div></div>
+      <div class="fase-card"><div class="fase-name">🔒 Verdediging</div><div style="font-size:13px;color:var(--text-dim);">${w.fase_verdediging||'–'}</div></div>
+      <div class="fase-card"><div class="fase-name">📐 Standaardsit.</div><div style="font-size:13px;color:var(--text-dim);">${w.fase_standaard||'–'}</div></div>
+    </div>`;
+
+  const docId = 'wd-' + w.id;
+  const docs = currentModalDocs[docId] || [];
+
+  document.getElementById('wd-modal-body').innerHTML = `
+    <div class="modal-tabs">
+      <div class="modal-tab active" onclick="switchModalTab(this,'wd-tab-info')">📋 Info</div>
+      <div class="modal-tab" onclick="switchModalTab(this,'wd-tab-events')">⏱ Events</div>
+      <div class="modal-tab" onclick="switchModalTab(this,'wd-tab-fases')">🔍 Fases</div>
+      <div class="modal-tab" onclick="switchModalTab(this,'wd-tab-docs')">📎 Documenten</div>
+    </div>
+    <div class="modal-tab-content active" id="wd-tab-info">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Thuisploeg</label>
+          <input class="edit-field" value="${w.thuis||''}" onchange="updateWedstrijdField('${w.id}','thuis',this.value)"></div>
+        <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Uitploeg</label>
+          <input class="edit-field" value="${w.uit||''}" onchange="updateWedstrijdField('${w.id}','uit',this.value)"></div>
+        <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Datum</label>
+          <input class="edit-field" type="date" value="${w.datum||''}" onchange="updateWedstrijdField('${w.id}','datum',this.value)"></div>
+        <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Competitie</label>
+          <input class="edit-field" value="${w.competitie||''}" onchange="updateWedstrijdField('${w.id}','competitie',this.value)"></div>
+        <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Stadion</label>
+          <input class="edit-field" value="${w.stadion||''}" onchange="updateWedstrijdField('${w.id}','stadion',this.value)"></div>
+        <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Ronde</label>
+          <input class="edit-field" value="${w.ronde||''}" onchange="updateWedstrijdField('${w.id}','ronde',this.value)"></div>
+      </div>
+      <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Sterktes</label>
+        <input class="edit-field" value="${w.sterktes||''}" onchange="updateWedstrijdField('${w.id}','sterktes',this.value)"></div>
+      <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Zwaktes</label>
+        <input class="edit-field" value="${w.zwaktes||''}" onchange="updateWedstrijdField('${w.id}','zwaktes',this.value)"></div>
+      <div><label style="font-size:10px;color:var(--text-dim);text-transform:uppercase;">Algemene indruk</label>
+        <textarea class="edit-field edit-textarea" onchange="updateWedstrijdField('${w.id}','indruk',this.value)">${w.indruk||''}</textarea></div>
+      <div style="font-size:11px;color:var(--groen);margin-top:6px;">✓ Wijzigingen worden automatisch opgeslagen</div>
+    </div>
+    <div class="modal-tab-content" id="wd-tab-events">
+      <div class="event-list" style="max-height:400px;">${eventsHTML}</div>
+    </div>
+    <div class="modal-tab-content" id="wd-tab-fases">${faseHTML}</div>
+    <div class="modal-tab-content" id="wd-tab-docs">${buildDocsHTML(docs, docId)}</div>
+  `;
+  document.getElementById('wedstrijdDetailModal').classList.add('open');
+}
+
+async function updateWedstrijdField(id, field, value) {
+  try {
+    await sb.from('wedstrijden').update({ [field]: value }).eq('id', id);
+    setDBStatus('online', 'opgeslagen ✓');
+    setTimeout(() => setDBStatus('online', 'verbonden'), 2000);
+  } catch(e) { setDBStatus('error', 'fout!'); }
 }
 
 function closeSpelerModal() {
   document.getElementById('spelerDetailModal').classList.remove('open');
+  loadDBSpelers();
 }
 
 async function loadDBWedstrijden() {
