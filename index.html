@@ -207,6 +207,34 @@
   .db-dot.error { background: var(--rood); }
   @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
+  /* SPELER DETAIL MODAL */
+  .speler-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 300; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 20px; }
+  .speler-modal-overlay.open { display: flex; }
+  .speler-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 800px; margin: auto; overflow: hidden; }
+  .speler-modal-header { background: var(--surface2); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+  .speler-modal-naam { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--groen); }
+  .speler-modal-close { background: none; border: none; color: var(--text-dim); font-size: 24px; cursor: pointer; padding: 0 6px; }
+  .speler-modal-close:hover { color: var(--rood); }
+  .speler-modal-body { padding: 24px; }
+  .rapport-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+  .rapport-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .rapport-datum { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent); }
+  .rapport-score { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--groen); }
+  .rapport-ratings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+  .rapport-rating-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+  .rapport-rating-val { font-family: 'Space Mono', monospace; font-weight: 700; }
+  .rating-bar { height: 4px; background: var(--border); border-radius: 2px; flex: 1; margin: 0 8px; }
+  .rating-bar-fill { height: 100%; border-radius: 2px; background: var(--groen); transition: width 0.3s; }
+  .evolutie-wrap { margin-top: 16px; }
+  .evolutie-title { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .evolutie-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+  .evolutie-label { min-width: 140px; color: var(--text-dim); }
+  .evolutie-first { font-family: 'Space Mono', monospace; min-width: 30px; text-align: right; color: var(--text-dim); }
+  .evolutie-last { font-family: 'Space Mono', monospace; min-width: 30px; color: var(--groen); }
+  .evolutie-arrow { font-size: 14px; }
+  .naam-warning { color: var(--rood); font-size: 11px; margin-top: 4px; display: none; }
+  .naam-warning.show { display: block; }
+
   /* DATABASE PANEL */
   .db-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .db-table th { background: var(--surface3); padding: 8px 12px; text-align: left; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
@@ -641,7 +669,7 @@
   </div>
 
   <div class="section">
-    <div class="section-title">👤 Spelersrapporten</div>
+    <div class="section-title">👤 Spelers <span style="font-size:11px;color:var(--text-dim);font-weight:400;margin-left:6px;">Klik op een speler om alle rapporten te zien</span></div>
     <div class="db-filter-row">
       <input type="text" id="db-zoek-speler" placeholder="🔍 Zoek op naam..." style="flex:1;min-width:150px;" oninput="filterSpelersDB()">
       <select id="db-filter-advies" onchange="filterSpelersDB()" style="min-width:160px;">
@@ -657,10 +685,7 @@
     <div style="overflow-x:auto;">
       <table class="db-table">
         <thead>
-          <tr>
-            <th>Naam</th><th>Positie</th><th>Ploeg</th><th>Voet</th>
-            <th>Gem.</th><th>Score</th><th>Aanbeveling</th><th>Datum</th><th></th>
-          </tr>
+          <tr><th>Speler</th><th>Positie</th><th>Ploeg</th><th>Rapporten</th><th>Eerste score</th><th>Laatste score</th><th>Evolutie</th><th>Aanbeveling</th><th></th></tr>
         </thead>
         <tbody id="db-spelers-body">
           <tr><td colspan="9" class="empty-state">Laden...</td></tr>
@@ -680,6 +705,21 @@
           <tr><td colspan="6" class="empty-state">Laden...</td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- SPELER DETAIL MODAL -->
+<div class="speler-modal-overlay" id="spelerDetailModal">
+  <div class="speler-modal">
+    <div class="speler-modal-header">
+      <div>
+        <div class="speler-modal-naam" id="modal-speler-naam">–</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-top:4px;" id="modal-speler-info">–</div>
+      </div>
+      <button class="speler-modal-close" onclick="closeSpelerModal()">×</button>
+    </div>
+    <div class="speler-modal-body" id="modal-speler-body">
     </div>
   </div>
 </div>
@@ -869,8 +909,8 @@ async function dbSaveHerinnering(h) {
   } catch(e) { console.error('Herinnering save error:', e); }
 }
 
-async function dbDeleteSpeler(dbId, localId) {
-  if (!confirm('Speler definitief verwijderen uit database?')) return;
+async function dbDeleteSpeler(dbId) {
+  if (!confirm('Rapport verwijderen uit database?')) return;
   try {
     await sb.from('spelers').delete().eq('id', dbId);
     loadDBSpelers();
@@ -910,7 +950,7 @@ async function loadDBSpelers() {
   if (!body) return;
   body.innerHTML = '<tr><td colspan="9" class="empty-state">Laden...</td></tr>';
   try {
-    const { data, error } = await sb.from('spelers').select('*').order('bijgewerkt_op', { ascending: false });
+    const { data, error } = await sb.from('spelers').select('*').order('bijgewerkt_op', { ascending: true });
     if (error) throw error;
     dbSpelersCache = data || [];
     renderDBSpelers(dbSpelersCache);
@@ -920,29 +960,50 @@ async function loadDBSpelers() {
   }
 }
 
+function groupSpelersByName(data) {
+  const groups = {};
+  data.forEach(s => {
+    const key = (s.naam || 'Onbekend').trim().toLowerCase();
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(s);
+  });
+  return groups;
+}
+
+function calcRatingsAvg(ratings) {
+  if (!ratings) return 0;
+  const vals = Object.values(ratings).filter(v => v > 0);
+  return vals.length > 0 ? parseFloat((vals.reduce((a,b) => a+b,0)/vals.length).toFixed(2)) : 0;
+}
+
 function renderDBSpelers(data) {
   const body = document.getElementById('db-spelers-body');
   if (!body) return;
   if (!data || data.length === 0) {
-    body.innerHTML = '<tr><td colspan="9" class="empty-state">Nog geen spelers in de database. Sla een spelersrapport op!</td></tr>';
+    body.innerHTML = '<tr><td colspan="9" class="empty-state">Nog geen spelers in de database.<br>Sla een spelersrapport op via het Spelers tabblad!</td></tr>';
     return;
   }
-  body.innerHTML = data.map(s => {
-    const datum = s.bijgewerkt_op ? new Date(s.bijgewerkt_op).toLocaleDateString('nl-BE') : '–';
-    const avg = s.ratings ? (() => {
-      const vals = Object.values(s.ratings).filter(v => v > 0);
-      return vals.length > 0 ? (vals.reduce((a,b) => a+b,0)/vals.length).toFixed(1) : '–';
-    })() : '–';
-    return `<tr>
-      <td><strong>${s.naam || '–'}</strong> ${s.rugnummer ? '#'+s.rugnummer : ''}</td>
-      <td>${s.positie || '–'}</td>
-      <td>${s.ploeg || '–'}</td>
-      <td>${s.voet || '–'}</td>
-      <td><span class="score-badge">${avg}</span></td>
-      <td><span class="score-badge">${s.final_rating > 0 ? s.final_rating+'/10' : '–'}</span></td>
-      <td><span class="advies-chip">${s.advies || '–'}</span></td>
-      <td style="color:var(--text-dim);font-size:12px;">${datum}</td>
-      <td><button class="del-btn" onclick="dbDeleteSpeler('${s.id}')">🗑</button></td>
+  const groups = groupSpelersByName(data);
+  body.innerHTML = Object.values(groups).map(rapporten => {
+    const eerste = rapporten[0];
+    const laatste = rapporten[rapporten.length - 1];
+    const eersteScore = calcRatingsAvg(eerste.ratings);
+    const laatsteScore = calcRatingsAvg(laatste.ratings);
+    const diff = parseFloat((laatsteScore - eersteScore).toFixed(2));
+    const evolutieKleur = diff > 0 ? 'var(--groen)' : diff < 0 ? 'var(--rood)' : 'var(--text-dim)';
+    const evolutiePijl = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+    const naam = eerste.naam || '–';
+    const allIds = rapporten.map(r => r.id).join(',');
+    return `<tr class="clickable" onclick="openSpelerModal('${allIds}')">
+      <td><strong>${naam}</strong> ${eerste.rugnummer ? '#'+eerste.rugnummer : ''}</td>
+      <td>${eerste.positie || '–'}</td>
+      <td>${eerste.ploeg || '–'}</td>
+      <td style="text-align:center;"><span style="background:var(--surface3);padding:3px 10px;border-radius:10px;font-family:'Space Mono',monospace;font-size:12px;">${rapporten.length}</span></td>
+      <td><span class="score-badge" style="color:var(--text-dim);">${eersteScore > 0 ? eersteScore : '–'}</span></td>
+      <td><span class="score-badge">${laatsteScore > 0 ? laatsteScore : '–'}</span></td>
+      <td><span style="color:${evolutieKleur};font-family:'Space Mono',monospace;font-weight:700;">${diff !== 0 ? evolutiePijl + ' ' + Math.abs(diff) : '→ –'}</span></td>
+      <td><span class="advies-chip">${laatste.advies || '–'}</span></td>
+      <td><button class="del-btn" onclick="event.stopPropagation();dbDeleteAllRapporten('${allIds}','${naam}')">🗑</button></td>
     </tr>`;
   }).join('');
 }
@@ -956,6 +1017,95 @@ function filterSpelersDB() {
     return naamMatch && adviesMatch;
   });
   renderDBSpelers(filtered);
+}
+
+async function dbDeleteAllRapporten(idsStr, naam) {
+  const ids = idsStr.split(',');
+  if (!confirm(`Alle ${ids.length} rapport(en) van ${naam} verwijderen?`)) return;
+  try {
+    for (const id of ids) await sb.from('spelers').delete().eq('id', id.trim());
+    loadDBSpelers();
+    loadDBStats();
+  } catch(e) { alert('Fout: ' + e.message); }
+}
+
+function openSpelerModal(idsStr) {
+  const ids = idsStr.split(',').map(i => i.trim());
+  const rapporten = dbSpelersCache.filter(s => ids.includes(s.id));
+  if (!rapporten.length) return;
+  rapporten.sort((a,b) => (a.aangemaakt_op||'').localeCompare(b.aangemaakt_op||''));
+  const eerste = rapporten[0];
+  const laatste = rapporten[rapporten.length-1];
+  document.getElementById('modal-speler-naam').textContent = eerste.naam || '–';
+  document.getElementById('modal-speler-info').textContent =
+    `${eerste.positie || '–'} · ${eerste.ploeg || '–'} · Voet: ${eerste.voet || '–'} · ${rapporten.length} rapport(en)`;
+
+  const attrLabels = {
+    aanpassingsvermogen:'Aanpassingsvermogen', coordinatie:'Coördinatie', creativiteit:'Creativiteit',
+    fysiek:'Fysiek', motoriek:'Motoriek', mentale_weerbaarheid:'Mentale weerbaarheid',
+    positiespel:'Positiespel', professionele_houding:'Professionele houding', scanning:'Scanning',
+    spelintelligentie:'Spelintelligentie', stabiliteit:'Stabiliteit', techniek_druk:'Techniek onder druk',
+    werkethiek:'Werkethiek', winnaarmentaliteit:'Winnaarmentaliteit'
+  };
+
+  // Evolutie sectie
+  let evolutieHTML = '';
+  if (rapporten.length > 1) {
+    evolutieHTML = `<div class="evolutie-wrap">
+      <div class="evolutie-title">📈 Evolutie: eerste vs laatste rapport</div>`;
+    Object.entries(attrLabels).forEach(([key, label]) => {
+      const v1 = (eerste.ratings && eerste.ratings[key]) || 0;
+      const v2 = (laatste.ratings && laatste.ratings[key]) || 0;
+      const diff = v2 - v1;
+      const kleur = diff > 0 ? 'var(--groen)' : diff < 0 ? 'var(--rood)' : 'var(--text-dim)';
+      const pijl = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+      evolutieHTML += `<div class="evolutie-row">
+        <span class="evolutie-label">${label}</span>
+        <span class="evolutie-first">${v1}/10</span>
+        <span class="evolutie-arrow" style="color:${kleur}">${pijl}</span>
+        <span class="evolutie-last">${v2}/10</span>
+        <div style="flex:1;margin-left:10px;">
+          <div class="rating-bar"><div class="rating-bar-fill" style="width:${v2*10}%;background:${kleur}"></div></div>
+        </div>
+      </div>`;
+    });
+    evolutieHTML += '</div><div class="divider" style="margin:16px 0;"></div>';
+  }
+
+  // Rapporten sectie
+  const rapportenHTML = rapporten.map((r, i) => {
+    const datum = r.aangemaakt_op ? new Date(r.aangemaakt_op).toLocaleDateString('nl-BE') : '–';
+    const avg = calcRatingsAvg(r.ratings);
+    const ratingsHTML = Object.entries(attrLabels).map(([key, label]) => {
+      const val = (r.ratings && r.ratings[key]) || 0;
+      return `<div class="rapport-rating-row">
+        <span style="color:var(--text-dim)">${label}</span>
+        <div class="rating-bar"><div class="rating-bar-fill" style="width:${val*10}%"></div></div>
+        <span class="rapport-rating-val">${val}</span>
+      </div>`;
+    }).join('');
+    return `<div class="rapport-card">
+      <div class="rapport-card-header">
+        <div>
+          <div class="rapport-datum">Rapport ${i+1} — ${datum}</div>
+          ${r.advies ? `<div style="font-size:12px;margin-top:4px;">${r.advies}</div>` : ''}
+        </div>
+        <div class="rapport-score">${r.final_rating > 0 ? r.final_rating+'/10' : avg > 0 ? avg+'/10' : '–'}</div>
+      </div>
+      ${r.wapen ? `<div style="margin-bottom:10px;font-size:12px;"><span style="color:var(--text-dim)">⚡ Wapen:</span> ${r.wapen}</div>` : ''}
+      <div class="rapport-ratings">${ratingsHTML}</div>
+      ${r.sterke_punten ? `<div style="margin-top:10px;font-size:12px;"><span style="color:var(--groen);font-weight:700;">+ Sterk:</span> ${r.sterke_punten}</div>` : ''}
+      ${r.zwakke_punten ? `<div style="font-size:12px;"><span style="color:var(--rood);font-weight:700;">- Zwak:</span> ${r.zwakke_punten}</div>` : ''}
+      ${r.obs_tact ? `<div style="font-size:12px;color:var(--text-dim);margin-top:6px;">${r.obs_tact}</div>` : ''}
+    </div>`;
+  }).reverse().join('');
+
+  document.getElementById('modal-speler-body').innerHTML = evolutieHTML + rapportenHTML;
+  document.getElementById('spelerDetailModal').classList.add('open');
+}
+
+function closeSpelerModal() {
+  document.getElementById('spelerDetailModal').classList.remove('open');
 }
 
 async function loadDBWedstrijden() {
@@ -1394,7 +1544,7 @@ function renderSpelerForm() {
     <div class="section">
       <div class="section-title">Spelersinfo</div>
       <div class="grid-4">
-        <div><label>Naam</label><input type="text" id="s-naam_${sid}" value="${s.naam !== 'Nieuwe Speler' ? s.naam : ''}" placeholder="Volledige naam" oninput="onSpelerNaamChange(${sid})"></div>
+        <div><label>Naam</label><input type="text" id="s-naam_${sid}" value="${s.naam !== 'Nieuwe Speler' ? s.naam : ''}" placeholder="Volledige naam" oninput="onSpelerNaamChange(${sid});checkDuplicateNaam(this.value,${sid})"><div class="naam-warning" id="naam-warning_${sid}">⚠️ Deze naam bestaat al in de database!</div></div>
         <div><label>Rugnummer</label><input type="number" id="s-nr_${sid}" value="${s.nr}" placeholder="#"></div>
         <div><label>Positie</label>
           <select id="s-positie_${sid}">
@@ -1532,6 +1682,20 @@ function renderSpelerForm() {
   }
 
   drawRadar(sid);
+}
+
+async function checkDuplicateNaam(naam, sid) {
+  if (!naam || naam.length < 2) return;
+  const warning = document.getElementById('naam-warning_' + sid);
+  if (!warning) return;
+  try {
+    const { data } = await sb.from('spelers').select('id,naam').ilike('naam', naam.trim());
+    const s = spelersData.find(x => x.id === sid);
+    const isDuplicate = data && data.length > 0 && !data.every(d => d.id === s?.db_id);
+    warning.classList.toggle('show', isDuplicate);
+    const input = warning.previousElementSibling;
+    if (input) input.style.borderColor = isDuplicate ? 'var(--rood)' : '';
+  } catch(e) {}
 }
 
 function onSpelerNaamChange(sid) {
