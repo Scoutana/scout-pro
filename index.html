@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scoutana</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
@@ -198,6 +199,29 @@
   .upload-zone input { display: none; }
 
 
+  /* DB STATUS */
+  .db-status { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: 'Space Mono', monospace; }
+  .db-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-dim); }
+  .db-dot.online { background: var(--groen); box-shadow: 0 0 6px var(--groen); }
+  .db-dot.saving { background: var(--geel); animation: pulse 0.8s infinite; }
+  .db-dot.error { background: var(--rood); }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+  /* DATABASE PANEL */
+  .db-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .db-table th { background: var(--surface3); padding: 8px 12px; text-align: left; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+  .db-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .db-table tr:hover td { background: var(--surface2); }
+  .db-table tr.clickable { cursor: pointer; }
+  .score-badge { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--groen); }
+  .advies-chip { font-size: 11px; padding: 3px 8px; border-radius: 10px; background: var(--surface3); border: 1px solid var(--border); }
+  .db-filter-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .db-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .db-stat-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .db-stat-num { font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--groen); }
+  .db-stat-label { font-size: 11px; color: var(--text-dim); margin-top: 4px; text-transform: uppercase; }
+  .empty-state { text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px; }
+
   /* FOTO */
   .foto-upload-zone { border: 2px dashed var(--border); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
   .foto-upload-zone:hover { border-color: var(--groen); }
@@ -252,12 +276,17 @@
 <header>
   <div class="logo">⚽ SCOUTANA</div>
   <div style="font-size:10px;color:var(--text-dim);font-family:'Space Mono',monospace;">© Andy Mulders</div>
+  <div class="db-status">
+    <div class="db-dot" id="db-dot"></div>
+    <span id="db-status-text" style="color:var(--text-dim);">verbinden...</span>
+  </div>
   <div class="tab-bar">
     <button class="tab-btn active" onclick="showTab('wedstrijd')">Wedstrijd</button>
     <button class="tab-btn" onclick="showTab('veld')">Opstelling</button>
     <button class="tab-btn" onclick="showTab('speler')">Spelers</button>
     <button class="tab-btn" onclick="showTab('kalender')">Kalender</button>
     <button class="tab-btn" onclick="showTab('herinneringen')">Follow-up <span class="badge-count" id="badge-herinneringen" style="display:none">0</span></button>
+    <button class="tab-btn" onclick="showTab('database')">Database</button>
     <button class="tab-btn" onclick="showTab('export')">Export</button>
     <button class="tab-btn" onclick="showTab('tips')">Tips</button>
   </div>
@@ -367,6 +396,9 @@
     </div>
     <div class="divider"></div>
     <div><label>Algemene indruk</label><textarea id="wedstrijd-indruk" placeholder="Samenvatting, sleutelmomenten, trends..."></textarea></div>
+    <div style="margin-top:12px;text-align:right;">
+      <button class="btn btn-groen" onclick="dbSaveWedstrijd()">💾 Wedstrijd opslaan in database</button>
+    </div>
   </div>
 </div>
 
@@ -596,6 +628,62 @@
   <div id="speler-form-container"></div>
 </div>
 
+<!-- ====================== DATABASE ====================== -->
+<div id="panel-database" class="panel">
+  <div class="section">
+    <div class="section-title">📊 Scoutana Database</div>
+    <div class="db-stats">
+      <div class="db-stat-card"><div class="db-stat-num" id="stat-spelers">–</div><div class="db-stat-label">Spelers</div></div>
+      <div class="db-stat-card"><div class="db-stat-num" id="stat-wedstrijden">–</div><div class="db-stat-label">Wedstrijden</div></div>
+      <div class="db-stat-card"><div class="db-stat-num" id="stat-herinneringen">–</div><div class="db-stat-label">Follow-ups</div></div>
+      <div class="db-stat-card"><div class="db-stat-num" id="stat-avg">–</div><div class="db-stat-label">Gem. score</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">👤 Spelersrapporten</div>
+    <div class="db-filter-row">
+      <input type="text" id="db-zoek-speler" placeholder="🔍 Zoek op naam..." style="flex:1;min-width:150px;" oninput="filterSpelersDB()">
+      <select id="db-filter-advies" onchange="filterSpelersDB()" style="min-width:160px;">
+        <option value="">Alle aanbevelingen</option>
+        <option>✅ Aanbevolen voor transfer</option>
+        <option>👀 Verder volgen</option>
+        <option>📋 Interessant komende zomer</option>
+        <option>⛔ Niet relevant</option>
+        <option>🔄 Herbekijken andere positie</option>
+      </select>
+      <button class="btn btn-ghost" onclick="loadDBSpelers()" style="font-size:12px;">↻ Vernieuwen</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="db-table">
+        <thead>
+          <tr>
+            <th>Naam</th><th>Positie</th><th>Ploeg</th><th>Voet</th>
+            <th>Gem.</th><th>Score</th><th>Aanbeveling</th><th>Datum</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="db-spelers-body">
+          <tr><td colspan="9" class="empty-state">Laden...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🏟 Wedstrijden</div>
+    <div style="overflow-x:auto;">
+      <table class="db-table">
+        <thead>
+          <tr><th>Datum</th><th>Wedstrijd</th><th>Competitie</th><th>Score</th><th>Aangemaakt</th><th></th></tr>
+        </thead>
+        <tbody id="db-wedstrijden-body">
+          <tr><td colspan="6" class="empty-state">Laden...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- ====================== EXPORT ====================== -->
 <div id="panel-export" class="panel">
   <div class="section">
@@ -667,6 +755,236 @@ INTERPRETATIE: "Twijfelachtig onder pressing"</div>
 </div>
 
 <script>
+// =================== SUPABASE ===================
+const SUPABASE_URL = 'https://ordppuxcbzhzxzkglrnr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_3Ov6aVSo0OVlB11w7C67Kw_IV301SGh';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let dbSpelersCache = [];
+
+async function dbInit() {
+  try {
+    const { error } = await sb.from('spelers').select('id').limit(1);
+    if (error) throw error;
+    setDBStatus('online', 'verbonden');
+    loadDBStats();
+  } catch(e) {
+    setDBStatus('error', 'offline');
+  }
+}
+
+function setDBStatus(status, text) {
+  const dot = document.getElementById('db-dot');
+  const txt = document.getElementById('db-status-text');
+  if (dot) { dot.className = 'db-dot ' + status; }
+  if (txt) { txt.textContent = text; txt.style.color = status === 'online' ? 'var(--groen)' : status === 'error' ? 'var(--rood)' : 'var(--geel)'; }
+}
+
+async function dbSaveSpeler(s) {
+  setDBStatus('saving', 'opslaan...');
+  try {
+    const payload = {
+      naam: s.naam || '',
+      rugnummer: s.nr || '',
+      positie: s.positie || '',
+      ploeg: s.ploeg || '',
+      geboortedatum: s.geboortedatum || null,
+      voet: s.voet || 'R',
+      wapen: s.wapen || '',
+      speelmin: parseInt(s.speelmin) || 90,
+      goals: parseInt(s.goals) || 0,
+      assists: parseInt(s.assists) || 0,
+      shots: parseInt(s.shots) || 0,
+      ratings: s.ratings || {},
+      final_rating: parseInt(s.finalRating) || 0,
+      obs_met: s.obs_met || '',
+      obs_zonder: s.obs_zonder || '',
+      obs_tact: s.obs_tact || '',
+      obs_fys: s.obs_fys || '',
+      sterke_punten: s.s_sterk || '',
+      zwakke_punten: s.s_zwak || '',
+      advies: s.advies || '',
+      waarde: s.waarde || '',
+      bijgewerkt_op: new Date().toISOString(),
+    };
+    let result;
+    if (s.db_id) {
+      result = await sb.from('spelers').update(payload).eq('id', s.db_id);
+    } else {
+      result = await sb.from('spelers').insert(payload).select();
+      if (result.data && result.data[0]) s.db_id = result.data[0].id;
+    }
+    if (result.error) throw result.error;
+    setDBStatus('online', 'opgeslagen ✓');
+    setTimeout(() => setDBStatus('online', 'verbonden'), 2000);
+  } catch(e) {
+    setDBStatus('error', 'fout bij opslaan');
+    console.error(e);
+  }
+}
+
+async function dbSaveWedstrijd() {
+  setDBStatus('saving', 'opslaan...');
+  try {
+    const get = id => document.getElementById(id)?.value || '';
+    const chipSterk = [...document.querySelectorAll('#chips-sterk .chip.on')].map(c => c.textContent).join(', ');
+    const chipZwak = [...document.querySelectorAll('#chips-zwak .chip.bad')].map(c => c.textContent).join(', ');
+    const payload = {
+      datum: get('datum') || null,
+      competitie: get('competitie'),
+      ronde: get('ronde'),
+      stadion: get('stadion'),
+      thuis: get('thuis'),
+      uit: get('uit'),
+      score_thuis: parseInt(get('score-thuis')) || 0,
+      score_uit: parseInt(get('score-uit')) || 0,
+      formatie_thuis: get('form-thuis'),
+      formatie_uit: get('form-uit'),
+      fase_opbouw: get('fase-opbouw'),
+      fase_omschakeling: get('fase-omschak'),
+      fase_verdediging: get('fase-verd'),
+      fase_standaard: get('fase-std'),
+      sterktes: chipSterk,
+      zwaktes: chipZwak,
+      indruk: get('wedstrijd-indruk'),
+      events: events,
+    };
+    const { error } = await sb.from('wedstrijden').insert(payload);
+    if (error) throw error;
+    setDBStatus('online', 'wedstrijd opgeslagen ✓');
+    setTimeout(() => setDBStatus('online', 'verbonden'), 2000);
+    alert('✅ Wedstrijd opgeslagen in database!');
+  } catch(e) {
+    setDBStatus('error', 'fout bij opslaan');
+    alert('❌ Fout: ' + e.message);
+  }
+}
+
+async function dbSaveHerinnering(h) {
+  try {
+    const payload = { speler: h.speler, datum: h.datum, type: h.type, notitie: h.notitie || '' };
+    const { data, error } = await sb.from('herinneringen').insert(payload).select();
+    if (error) throw error;
+    if (data && data[0]) h.db_id = data[0].id;
+  } catch(e) { console.error('Herinnering save error:', e); }
+}
+
+async function dbDeleteSpeler(dbId, localId) {
+  if (!confirm('Speler definitief verwijderen uit database?')) return;
+  try {
+    await sb.from('spelers').delete().eq('id', dbId);
+    loadDBSpelers();
+    loadDBStats();
+  } catch(e) { alert('Fout bij verwijderen: ' + e.message); }
+}
+
+async function dbDeleteWedstrijd(dbId) {
+  if (!confirm('Wedstrijd verwijderen uit database?')) return;
+  try {
+    await sb.from('wedstrijden').delete().eq('id', dbId);
+    loadDBWedstrijden();
+    loadDBStats();
+  } catch(e) { alert('Fout: ' + e.message); }
+}
+
+async function loadDBStats() {
+  try {
+    const [sp, wd, hr] = await Promise.all([
+      sb.from('spelers').select('final_rating', { count: 'exact' }),
+      sb.from('wedstrijden').select('id', { count: 'exact' }),
+      sb.from('herinneringen').select('id', { count: 'exact' }),
+    ]);
+    document.getElementById('stat-spelers').textContent = sp.count ?? 0;
+    document.getElementById('stat-wedstrijden').textContent = wd.count ?? 0;
+    document.getElementById('stat-herinneringen').textContent = hr.count ?? 0;
+    if (sp.data && sp.data.length > 0) {
+      const ratings = sp.data.map(r => r.final_rating || 0).filter(r => r > 0);
+      const avg = ratings.length > 0 ? (ratings.reduce((a,b) => a+b, 0) / ratings.length).toFixed(1) : '–';
+      document.getElementById('stat-avg').textContent = avg;
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function loadDBSpelers() {
+  const body = document.getElementById('db-spelers-body');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="9" class="empty-state">Laden...</td></tr>';
+  try {
+    const { data, error } = await sb.from('spelers').select('*').order('bijgewerkt_op', { ascending: false });
+    if (error) throw error;
+    dbSpelersCache = data || [];
+    renderDBSpelers(dbSpelersCache);
+    loadDBStats();
+  } catch(e) {
+    body.innerHTML = '<tr><td colspan="9" class="empty-state">❌ Kan data niet laden</td></tr>';
+  }
+}
+
+function renderDBSpelers(data) {
+  const body = document.getElementById('db-spelers-body');
+  if (!body) return;
+  if (!data || data.length === 0) {
+    body.innerHTML = '<tr><td colspan="9" class="empty-state">Nog geen spelers in de database. Sla een spelersrapport op!</td></tr>';
+    return;
+  }
+  body.innerHTML = data.map(s => {
+    const datum = s.bijgewerkt_op ? new Date(s.bijgewerkt_op).toLocaleDateString('nl-BE') : '–';
+    const avg = s.ratings ? (() => {
+      const vals = Object.values(s.ratings).filter(v => v > 0);
+      return vals.length > 0 ? (vals.reduce((a,b) => a+b,0)/vals.length).toFixed(1) : '–';
+    })() : '–';
+    return `<tr>
+      <td><strong>${s.naam || '–'}</strong> ${s.rugnummer ? '#'+s.rugnummer : ''}</td>
+      <td>${s.positie || '–'}</td>
+      <td>${s.ploeg || '–'}</td>
+      <td>${s.voet || '–'}</td>
+      <td><span class="score-badge">${avg}</span></td>
+      <td><span class="score-badge">${s.final_rating > 0 ? s.final_rating+'/10' : '–'}</span></td>
+      <td><span class="advies-chip">${s.advies || '–'}</span></td>
+      <td style="color:var(--text-dim);font-size:12px;">${datum}</td>
+      <td><button class="del-btn" onclick="dbDeleteSpeler('${s.id}')">🗑</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterSpelersDB() {
+  const zoek = document.getElementById('db-zoek-speler')?.value.toLowerCase() || '';
+  const advies = document.getElementById('db-filter-advies')?.value || '';
+  const filtered = dbSpelersCache.filter(s => {
+    const naamMatch = !zoek || (s.naam || '').toLowerCase().includes(zoek);
+    const adviesMatch = !advies || (s.advies || '') === advies;
+    return naamMatch && adviesMatch;
+  });
+  renderDBSpelers(filtered);
+}
+
+async function loadDBWedstrijden() {
+  const body = document.getElementById('db-wedstrijden-body');
+  if (!body) return;
+  try {
+    const { data, error } = await sb.from('wedstrijden').select('*').order('aangemaakt_op', { ascending: false }).limit(20);
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      body.innerHTML = '<tr><td colspan="6" class="empty-state">Nog geen wedstrijden opgeslagen.</td></tr>';
+      return;
+    }
+    body.innerHTML = data.map(w => {
+      const datum = w.datum ? new Date(w.datum).toLocaleDateString('nl-BE') : '–';
+      const aangemaakt = w.aangemaakt_op ? new Date(w.aangemaakt_op).toLocaleDateString('nl-BE') : '–';
+      return `<tr>
+        <td style="color:var(--accent);font-family:'Space Mono',monospace;font-size:12px;">${datum}</td>
+        <td><strong>${w.thuis || '–'}</strong> vs <strong>${w.uit || '–'}</strong></td>
+        <td>${w.competitie || '–'}</td>
+        <td><span class="score-badge">${w.score_thuis ?? 0} – ${w.score_uit ?? 0}</span></td>
+        <td style="color:var(--text-dim);font-size:12px;">${aangemaakt}</td>
+        <td><button class="del-btn" onclick="dbDeleteWedstrijd('${w.id}')">🗑</button></td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    body.innerHTML = '<tr><td colspan="6" class="empty-state">❌ Kan data niet laden</td></tr>';
+  }
+}
+
 // =================== GLOBALS ===================
 let events = [];
 let players = []; // { id, team, nr, naam, jaar, voet, positie, x, y }
@@ -684,6 +1002,7 @@ function showTab(name) {
     if (b.textContent.trim().toLowerCase().startsWith(labels[name])) b.classList.add('active');
   });
   if (name === 'export') generateNotion();
+  if (name === 'database') { loadDBSpelers(); loadDBWedstrijden(); }
   if (name === 'veld') renderPlayers();
   if (name === 'kalender') { renderKalender(); renderWedstrijdList(); }
   if (name === 'herinneringen') renderHerinneringen();
@@ -1032,6 +1351,14 @@ function removeSpeler(id) {
   else document.getElementById('speler-form-container').innerHTML = '<div style="padding:20px;color:var(--text-dim);">Geen spelers. Klik "+ Nieuwe speler" om te beginnen.</div>';
 }
 
+async function saveAndUploadSpeler(sid) {
+  saveCurrentSpelerForm();
+  const s = spelersData.find(x => x.id === sid);
+  if (!s) return;
+  await dbSaveSpeler(s);
+  loadDBStats();
+}
+
 function saveCurrentSpelerForm() {
   if (!activeSpelerId) return;
   const s = spelersData.find(x => x.id === activeSpelerId);
@@ -1160,6 +1487,9 @@ function renderSpelerForm() {
           </select>
           <div style="margin-top:8px;"><label>Transferwaarde</label><input type="text" id="s-waarde_${sid}" value="${s.waarde}" placeholder="b.v. €4M – €7M"></div>
         </div>
+      </div>
+      <div style="margin-top:14px;text-align:right;">
+        <button class="btn btn-groen" onclick="saveAndUploadSpeler(${sid})">💾 Rapport opslaan in database</button>
       </div>
     </div>
   `;
@@ -1516,7 +1846,9 @@ function addHerinnering() {
   const type = document.getElementById('her-type').value;
   const notitie = document.getElementById('her-notitie').value.trim();
   if (!speler || !datum) { alert('Vul speler en datum in.'); return; }
-  herinneringen.push({ id: Date.now(), speler, datum, type, notitie });
+  const newHer = { id: Date.now(), speler, datum, type, notitie };
+  herinneringen.push(newHer);
+  dbSaveHerinnering(newHer);
   herinneringen.sort((a, b) => a.datum.localeCompare(b.datum));
   document.getElementById('her-speler').value = '';
   document.getElementById('her-datum').value = '';
@@ -1582,6 +1914,7 @@ renderKalender();
 renderWedstrijdList();
 renderHerinneringen();
 updateBadge();
+dbInit();
 </script>
 </body>
 </html>
