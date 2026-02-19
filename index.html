@@ -1699,7 +1699,11 @@ function importCSV(event) {
     fb.textContent = `✅ ${count} spelers geïmporteerd!`;
     fb.style.display = 'block';
     renderPlayers();
-    showTab('veld');
+    // Scroll to pitch
+    setTimeout(() => {
+      const pitch = document.getElementById('pitch-container');
+      if (pitch) pitch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   };
   reader.readAsText(file);
 }
