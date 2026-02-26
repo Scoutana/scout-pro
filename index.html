@@ -706,7 +706,7 @@
       <div style="min-width:140px;"><label>Datum</label><input type="date" id="kal-datum"></div>
       <div style="flex:1;min-width:150px;"><label>Thuis vs Uit</label><input type="text" id="kal-match" placeholder="b.v. Club Brugge vs Anderlecht"></div>
       <div style="min-width:120px;"><label>Competitie</label><input type="text" id="kal-comp" placeholder="b.v. JPL"></div>
-      <div style="min-width:120px;"><label>Te scouten speler</label><input type="text" id="kal-speler" placeholder="Naam speler"></div>
+      <div style="flex:1;min-width:180px;"><label>Te scouten spelers</label><input type="text" id="kal-spelers" placeholder="Meerdere spelers (komma gescheiden)"></div>
       <button class="btn btn-groen" onclick="addWedstrijd()">+ Toevoegen</button>
     </div>
   </div>
@@ -939,8 +939,10 @@ async function dbSaveSpeler(s) {
       obs_fys: s.obs_fys || '',
       sterke_punten: s.s_sterk || '',
       zwakke_punten: s.s_zwak || '',
+      conclusie: s.conclusie || '',
       advies: s.advies || '',
       waarde: s.waarde || '',
+      wedstrijd_id: s.wedstrijd_id || null,
       bijgewerkt_op: new Date().toISOString(),
     };
     let result;
@@ -958,6 +960,8 @@ async function dbSaveSpeler(s) {
     console.error(e);
   }
 }
+
+let currentWedstrijdId = null;
 
 async function dbSaveWedstrijd() {
   setDBStatus('saving', 'opslaan...');
@@ -984,12 +988,27 @@ async function dbSaveWedstrijd() {
       zwaktes: chipZwak,
       indruk: get('wedstrijd-indruk'),
       events: events,
+      spelers_op_veld: players,
     };
-    const { error } = await sb.from('wedstrijden').insert(payload);
-    if (error) throw error;
+    
+    let result;
+    if (currentWedstrijdId) {
+      result = await sb.from('wedstrijden').update(payload).eq('id', currentWedstrijdId).select();
+    } else {
+      result = await sb.from('wedstrijden').insert(payload).select();
+      if (result.data && result.data[0]) {
+        currentWedstrijdId = result.data[0].id;
+      }
+    }
+    
+    if (result.error) throw result.error;
     setDBStatus('online', 'wedstrijd opgeslagen ✓');
     setTimeout(() => setDBStatus('online', 'verbonden'), 2000);
-    alert('✅ Wedstrijd opgeslagen in database!');
+    alert('✅ Wedstrijd opgeslagen! ID: ' + currentWedstrijdId);
+    
+    // Update all spelers with this wedstrijd_id
+    spelersData.forEach(s => { s.wedstrijd_id = currentWedstrijdId; });
+    
   } catch(e) {
     setDBStatus('error', 'fout bij opslaan');
     alert('❌ Fout: ' + e.message);
@@ -1022,15 +1041,18 @@ async function loadKalenderFromDB() {
     if (error) throw error;
     wedstrijden = (data || []).map(w => ({
       id: w.id,
-      datum: w.datum,
-      match: w.match_naam,
-      comp: w.competitie,
-      speler: w.te_scouten_speler
+      datum: w.datum || '',
+      match: w.match_naam || '',
+      comp: w.competitie || '',
+      spelers: w.te_scouten_speler || ''
     }));
     renderKalender();
     renderWedstrijdList();
   } catch(e) {
     console.error('Kalender load error:', e);
+    wedstrijden = [];
+    renderKalender();
+    renderWedstrijdList();
   }
 }
 
@@ -1038,11 +1060,20 @@ async function loadHerinneringenFromDB() {
   try {
     const { data, error } = await sb.from('herinneringen').select('*').order('datum', { ascending: true });
     if (error) throw error;
-    herinneringen = data || [];
+    herinneringen = (data || []).map(h => ({
+      id: h.id,
+      speler: h.speler || '',
+      datum: h.datum || '',
+      type: h.type || '',
+      notitie: h.notitie || ''
+    }));
     renderHerinneringen();
     updateBadge();
   } catch(e) {
     console.error('Herinneringen load error:', e);
+    herinneringen = [];
+    renderHerinneringen();
+    updateBadge();
   }
 }
 
@@ -1369,12 +1400,16 @@ function drawModalRadar(ratings, keys, labels) {
 }
 
 function buildDocsHTML(docs, spelerDbId) {
-  const docsItems = docs.length > 0 ? docs.map((d,i) => `
-    <div class="doc-card" onclick="openDoc('${i}','${spelerDbId}')">
-      <div class="doc-icon">${d.type==='pdf'?'📄':d.type==='word'?'📝':d.type==='img'?'🖼️':'📎'}</div>
+  const docsItems = docs.length > 0 ? docs.map((d,i) => {
+    const ext = d.naam.split('.').pop().toLowerCase();
+    const icon = ['pdf'].includes(ext) ? '📄' : ['doc','docx'].includes(ext) ? '📝' : ['jpg','jpeg','png','gif'].includes(ext) ? '🖼️' : ['xls','xlsx'].includes(ext) ? '📊' : '📎';
+    return `
+    <div class="doc-card" onclick="openDoc(${i},'${spelerDbId}')">
+      <div class="doc-icon">${icon}</div>
       <div class="doc-name">${d.naam}</div>
       <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">${d.datum||''}</div>
-    </div>`).join('') : '<div style="color:var(--text-dim);font-size:13px;padding:10px;">Nog geen documenten toegevoegd.</div>';
+    </div>`;
+  }).join('') : '<div style="color:var(--text-dim);font-size:13px;padding:10px;">Nog geen documenten toegevoegd.</div>';
   return `
     <div class="doc-upload-zone" onclick="document.getElementById('doc-upload-input').click()">
       <input type="file" id="doc-upload-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" style="display:none" onchange="uploadDoc(event,'${spelerDbId}')">
@@ -1391,16 +1426,12 @@ function uploadDoc(event, spelerDbId) {
   const reader = new FileReader();
   reader.onload = function(e) {
     if (!currentModalDocs[spelerDbId]) currentModalDocs[spelerDbId] = [];
-    const ext = file.name.split('.').pop().toLowerCase();
-    const type = ['jpg','jpeg','png','gif'].includes(ext) ? 'img' : ext === 'pdf' ? 'pdf' : ['doc','docx'].includes(ext) ? 'word' : 'file';
     currentModalDocs[spelerDbId].push({
       naam: file.name,
       data: e.target.result,
-      type,
       datum: new Date().toLocaleDateString('nl-BE')
     });
-    const grid = document.getElementById('doc-grid-' + spelerDbId);
-    if (grid) grid.outerHTML = buildDocsHTML(currentModalDocs[spelerDbId], spelerDbId).split('doc-grid')[1];
+    // Rebuild the entire docs tab
     document.getElementById('tab-docs').innerHTML = buildDocsHTML(currentModalDocs[spelerDbId], spelerDbId);
     event.target.value = '';
   };
@@ -1410,11 +1441,21 @@ function uploadDoc(event, spelerDbId) {
 function openDoc(idx, spelerDbId) {
   const doc = (currentModalDocs[spelerDbId] || [])[idx];
   if (!doc) return;
-  const win = window.open();
-  if (doc.type === 'img') {
-    win.document.write(`<img src="${doc.data}" style="max-width:100%">`);
+  const ext = doc.naam.split('.').pop().toLowerCase();
+  const isImg = ['jpg','jpeg','png','gif'].includes(ext);
+  
+  if (isImg) {
+    const win = window.open();
+    win.document.write(`<html><head><title>${doc.naam}</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#000;"><img src="${doc.data}" style="max-width:100%;max-height:100vh;"></body></html>`);
   } else {
-    win.location = doc.data;
+    // For PDF, Word, Excel - open in new tab
+    const link = document.createElement('a');
+    link.href = doc.data;
+    link.download = doc.naam;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }
 
@@ -1432,7 +1473,17 @@ async function updateSpelerField(ids, field, value) {
   } catch(e) { setDBStatus('error', 'fout!'); }
 }
 
-function openWedstrijdModal(w) {
+async function openWedstrijdModal(wedstrijdId) {
+  try {
+    const { data, error } = await sb.from('wedstrijden').select('*').eq('id', wedstrijdId).single();
+    if (error) throw error;
+    const w = data;
+    
+    // Load players if available
+    if (w.spelers_op_veld && Array.isArray(w.spelers_op_veld)) {
+      players = w.spelers_op_veld;
+      renderPlayers();
+    }
   document.getElementById('wd-modal-naam').textContent = `${w.thuis||'–'} ${w.score_thuis??0} – ${w.score_uit??0} ${w.uit||'–'}`;
   document.getElementById('wd-modal-info').textContent = `${w.competitie||'–'} · ${w.ronde||''} · ${w.stadion||''} · ${w.datum||''}`;
 
@@ -1488,6 +1539,9 @@ function openWedstrijdModal(w) {
     <div class="modal-tab-content" id="wd-tab-docs">${buildDocsHTML(docs, docId)}</div>
   `;
   document.getElementById('wedstrijdDetailModal').classList.add('open');
+  } catch(e) {
+    alert('Fout bij laden wedstrijd: ' + e.message);
+  }
 }
 
 async function updateWedstrijdField(id, field, value) {
@@ -1860,7 +1914,9 @@ function createNewSpelerData(id) {
     obs_fys: '',
     s_sterk: '',
     s_zwak: '',
+    conclusie: '',
     advies: '',
+    wedstrijd_id: null,
     waarde: '',
   };
 }
@@ -1904,6 +1960,18 @@ async function saveAndUploadSpeler(sid) {
   saveCurrentSpelerForm();
   const s = spelersData.find(x => x.id === sid);
   if (!s) return;
+  
+  // Link to current wedstrijd if exists
+  if (currentWedstrijdId) {
+    s.wedstrijd_id = currentWedstrijdId;
+  } else {
+    const confirm = window.confirm('Geen wedstrijd gekoppeld. Wil je eerst de wedstrijd opslaan?');
+    if (confirm) {
+      alert('Klik eerst op "💾 Wedstrijd opslaan in database" in het Wedstrijd tabblad.');
+      return;
+    }
+  }
+  
   await dbSaveSpeler(s);
   loadDBStats();
 }
@@ -2017,6 +2085,11 @@ function renderSpelerForm() {
         <div><label>Sterkste momenten</label><textarea id="s-sterk_${sid}" placeholder="2-3 concrete acties die imponeerden...">${s.s_sterk}</textarea></div>
         <div><label>Aandachtspunten</label><textarea id="s-zwak_${sid}" placeholder="Momenten van twijfel, fouten...">${s.s_zwak}</textarea></div>
       </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Conclusie</div>
+      <div><label>Eindconclusie</label><textarea id="s-conclusie_${sid}" placeholder="Jouw finale conclusie over deze speler...">${s.conclusie||''}</textarea></div>
     </div>
 
     <div class="section">
@@ -2356,21 +2429,21 @@ async function addWedstrijd() {
   const datum = document.getElementById('kal-datum').value;
   const match = document.getElementById('kal-match').value.trim();
   const comp = document.getElementById('kal-comp').value.trim();
-  const speler = document.getElementById('kal-speler').value.trim();
+  const spelers = document.getElementById('kal-spelers').value.trim();
   if (!datum || !match) { alert('Vul datum en wedstrijd in.'); return; }
   try {
     const { data, error } = await sb.from('kalender').insert({
-      datum, match_naam: match, competitie: comp, te_scouten_speler: speler
+      datum, match_naam: match, competitie: comp, te_scouten_speler: spelers
     }).select();
     if (error) throw error;
     if (data && data[0]) {
-      wedstrijden.push({ id: data[0].id, datum, match, comp, speler });
+      wedstrijden.push({ id: data[0].id, datum, match, comp, spelers });
       wedstrijden.sort((a, b) => a.datum.localeCompare(b.datum));
     }
     document.getElementById('kal-datum').value = '';
     document.getElementById('kal-match').value = '';
     document.getElementById('kal-comp').value = '';
-    document.getElementById('kal-speler').value = '';
+    document.getElementById('kal-spelers').value = '';
     renderKalender();
     renderWedstrijdList();
     setDBStatus('online', 'opgeslagen ✓');
@@ -2389,16 +2462,18 @@ function renderWedstrijdList() {
   }
   const today = new Date().toISOString().split('T')[0];
   wedstrijden.forEach((w, i) => {
-    const isPast = w.datum < today;
+    const datum = w.datum || '';
+    const isPast = datum && datum < today;
     const div = document.createElement('div');
     div.className = 'wedstrijd-item';
+    const datumDisplay = datum ? datum.split('-').reverse().join('/') : '–';
     div.innerHTML = `
       <div class="wedstrijd-datum" style="color:${isPast ? 'var(--text-dim)' : 'var(--accent)'}">
-        ${w.datum.split('-').reverse().join('/')}
+        ${datumDisplay}
       </div>
       <div class="wedstrijd-info">
-        <div class="wedstrijd-titel">${w.match}</div>
-        <div class="wedstrijd-sub">${w.comp ? w.comp + ' · ' : ''}${w.speler ? '👤 ' + w.speler : ''}</div>
+        <div class="wedstrijd-titel">${w.match || '–'}</div>
+        <div class="wedstrijd-sub">${w.comp ? w.comp + ' · ' : ''}${w.spelers ? '👥 ' + w.spelers : ''}</div>
       </div>
       <button class="del-btn" onclick="delWedstrijd(${i})">×</button>
     `;
@@ -2458,18 +2533,20 @@ function renderHerinneringen() {
   const soon = new Date(); soon.setDate(soon.getDate() + 7);
   const soonStr = soon.toISOString().split('T')[0];
   herinneringen.forEach((h, i) => {
+    const datum = h.datum || '';
     let klasse = 'ok', label = 'Gepland';
-    if (h.datum < today) { klasse = 'vervallen'; label = '⚠️ Verlopen'; }
-    else if (h.datum <= soonStr) { klasse = 'binnenkort'; label = '🔔 Binnenkort'; }
+    if (datum && datum < today) { klasse = 'vervallen'; label = '⚠️ Verlopen'; }
+    else if (datum && datum <= soonStr) { klasse = 'binnenkort'; label = '🔔 Binnenkort'; }
     const div = document.createElement('div');
     div.className = 'herinnering-item';
+    const datumDisplay = datum ? datum.split('-').reverse().join('/') : '–';
     div.innerHTML = `
       <div class="herinnering-datum ${klasse}">
-        ${h.datum.split('-').reverse().join('/')}<br>
+        ${datumDisplay}<br>
         <span style="font-size:10px;">${label}</span>
       </div>
       <div class="herinnering-info">
-        <div class="herinnering-titel">${h.type} — ${h.speler}</div>
+        <div class="herinnering-titel">${h.type || ''} — ${h.speler || ''}</div>
         <div class="herinnering-sub">${h.notitie || '—'}</div>
       </div>
       <button class="del-btn" onclick="delHerinnering(${i})">×</button>
