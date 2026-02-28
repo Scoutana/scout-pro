@@ -939,7 +939,6 @@ async function dbSaveSpeler(s) {
       obs_fys: s.obs_fys || '',
       sterke_punten: s.s_sterk || '',
       zwakke_punten: s.s_zwak || '',
-      conclusie: s.conclusie || '',
       advies: s.advies || '',
       waarde: s.waarde || '',
       wedstrijd_id: s.wedstrijd_id || null,
@@ -1927,7 +1926,6 @@ function createNewSpelerData(id) {
     obs_fys: '',
     s_sterk: '',
     s_zwak: '',
-    conclusie: '',
     advies: '',
     wedstrijd_id: null,
     waarde: '',
@@ -2093,11 +2091,6 @@ function renderSpelerForm() {
         <div><label>Sterkste momenten</label><textarea id="s-sterk_${sid}" placeholder="2-3 concrete acties die imponeerden...">${s.s_sterk}</textarea></div>
         <div><label>Aandachtspunten</label><textarea id="s-zwak_${sid}" placeholder="Momenten van twijfel, fouten...">${s.s_zwak}</textarea></div>
       </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Conclusie</div>
-      <div><label>Eindconclusie</label><textarea id="s-conclusie_${sid}" placeholder="Jouw finale conclusie over deze speler...">${s.conclusie||''}</textarea></div>
     </div>
 
     <div class="section">
