@@ -945,6 +945,9 @@ async function dbSaveSpeler(s) {
       wedstrijd_id: s.wedstrijd_id || null,
       bijgewerkt_op: new Date().toISOString(),
     };
+    
+    console.log('Saving speler:', payload);
+    
     let result;
     if (s.db_id) {
       result = await sb.from('spelers').update(payload).eq('id', s.db_id);
@@ -952,12 +955,22 @@ async function dbSaveSpeler(s) {
       result = await sb.from('spelers').insert(payload).select();
       if (result.data && result.data[0]) s.db_id = result.data[0].id;
     }
-    if (result.error) throw result.error;
+    
+    if (result.error) {
+      console.error('Database error:', result.error);
+      throw new Error(result.error.message || 'Database fout');
+    }
+    
     setDBStatus('online', 'opgeslagen ✓');
     setTimeout(() => setDBStatus('online', 'verbonden'), 2000);
+    return true;
   } catch(e) {
     setDBStatus('error', 'fout bij opslaan');
-    console.error(e);
+    console.error('Save error:', e);
+    alert('Fout bij opslaan: ' + e.message + '
+
+Check de browser console (F12) voor details.');
+    return false;
   }
 }
 
