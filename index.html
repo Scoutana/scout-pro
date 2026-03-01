@@ -899,12 +899,26 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let dbSpelersCache = [];
 
 async function dbInit() {
+  console.log('Starting dbInit...');
+  setDBStatus('saving', 'verbinden...');
+  
   try {
-    const { error } = await sb.from('spelers').select('id').limit(1);
-    if (error) throw error;
+    console.log('Testing Supabase connection...');
+    const result = await sb.from('spelers').select('*').limit(1);
+    
+    console.log('Result:', result);
+    
+    if (result.error) {
+      console.error('Supabase error:', result.error);
+      throw new Error(result.error.message || 'Database error');
+    }
+    
+    console.log('✅ Connected! Data:', result.data);
     setDBStatus('online', 'verbonden');
     loadDBStats();
+    
   } catch(e) {
+    console.error('❌ Connection failed:', e);
     setDBStatus('error', 'offline');
   }
 }
@@ -2585,9 +2599,20 @@ function updateBadge() {
 // Start with empty speler prompt
 document.getElementById('speler-form-container').innerHTML = '<div style="padding:20px;color:var(--text-dim);font-size:13px;">Klik "+ Nieuwe speler" om een spelersbeoordeling te starten.</div>';
 kalDate = new Date();
-dbInit();
-loadKalenderFromDB();
-loadHerinneringenFromDB();
+
+// Wait for DOM to be fully loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+
+function initApp() {
+  console.log('Initializing app...');
+  dbInit();
+  loadKalenderFromDB();
+  loadHerinneringenFromDB();
+}
 </script>
 </body>
 </html>
